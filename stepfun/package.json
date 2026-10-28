@@ -1,0 +1,18 @@
+{
+  "name": "stepfun-seekdb-kb",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "download-models": "node scripts/download-models.mjs",
+    "smoke": "bash scripts/with-bindings.sh node server/smoke.mjs",
+    "server": "bash scripts/with-bindings.sh node server/index.js",
+    "dev": "bash scripts/with-bindings.sh node scripts/dev.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "seekdb": "1.4.0"
+  }
+}

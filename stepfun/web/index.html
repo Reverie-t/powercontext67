@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>本地知识库</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>本地知识库</h1>
+        <p>文档和查询的向量都在这台浏览器里算。seekdb 负责把全文和向量合成一个排序。</p>
+      </div>
+      <div id="badges" class="badges"></div>
+    </header>
+    <main>
+      <section>
+        <h2>导入</h2>
+        <label>
+          精度
+          <select id="dtype">
+            <option value="q8" selected>INT8（q8，默认）</option>
+            <option value="fp16">FP16</option>
+            <option value="fp32">FP32 基线</option>
+          </select>
+        </label>
+        <p id="collection-line" class="muted"></p>
+        <div class="row">
+          <button id="reload-model" type="button">重新加载模型</button>
+          <button id="clear-kb" type="button">清空当前库</button>
+        </div>
+        <label class="file">
+          选择 txt / md
+          <input id="files" type="file" accept=".txt,.md,text/plain" multiple />
+        </label>
+        <label>
+          标题
+          <input id="paste-title" type="text" value="粘贴" />
+        </label>
+        <label>
+          直接贴文本
+          <textarea id="paste" rows="5" placeholder="贴一段文字，点下面的按钮写进当前库"></textarea>
+        </label>
+        <div class="row">
+          <button id="import-paste" type="button">写入粘贴内容</button>
+          <button id="import-sample" type="button">导入样例语料</button>
+          <button id="run-eval" type="button">用样例算 Recall@5</button>
+        </div>
+        <p id="progress" class="progress">模型加载中。</p>
+        <pre id="log" class="log"></pre>
+      </section>
+      <section>
+        <h2>检索</h2>
+        <label>
+          查询
+          <textarea id="query" rows="3" placeholder="例如：新写入的文档要怎样才能被检索到"></textarea>
+        </label>
+        <div class="row">
+          <button id="search" type="button">检索</button>
+          <label class="inline">
+            条数
+            <input id="k" type="number" min="1" max="20" value="5" />
+          </label>
+        </div>
+        <p class="muted">查询向量会自动加上 bge 的检索前缀。全文这一路用你输入的原句，不加前缀。</p>
+        <div id="results"></div>
+        <h2>这次耗时</h2>
+        <pre id="timing" class="log"></pre>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

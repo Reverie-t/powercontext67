@@ -1,0 +1,52 @@
+[
+  {
+    "id": "q-refresh",
+    "text": "新写入的向量要怎样才能马上被检索到",
+    "relevant": ["doc-refresh"]
+  },
+  {
+    "id": "q-webgpu",
+    "text": "浏览器没有显卡接口时，模型改在哪里算",
+    "relevant": ["doc-webgpu"]
+  },
+  {
+    "id": "q-quant",
+    "text": "INT8 权重文件叫什么，能不能和别的维度混在一个集合里",
+    "relevant": ["doc-quant"]
+  },
+  {
+    "id": "q-bge",
+    "text": "bge 中文查询要加哪一句指令，文档要不要加",
+    "relevant": ["doc-bge"]
+  },
+  {
+    "id": "q-hybrid",
+    "text": "全文和向量是一次交给数据库，还是浏览器自己拼结果",
+    "relevant": ["doc-hybrid"]
+  },
+  {
+    "id": "q-chunk",
+    "text": "长文档怎么切，Recall 按段算还是按文档算",
+    "relevant": ["doc-chunk"]
+  },
+  {
+    "id": "q-tea",
+    "text": "杭州清明前采的绿茶怎么冲",
+    "relevant": ["doc-tea"]
+  },
+  {
+    "id": "q-metro",
+    "text": "去浦东机场该坐上海哪条地铁",
+    "relevant": ["doc-metro"]
+  },
+  {
+    "id": "q-ocean",
+    "text": "世界上最深的海沟在哪个大洋",
+    "relevant": ["doc-ocean"]
+  },
+  {
+    "id": "q-noodle",
+    "text": "兰州牛肉面的一清二白三红四绿五黄是什么意思",
+    "relevant": ["doc-noodle"]
+  }
+]

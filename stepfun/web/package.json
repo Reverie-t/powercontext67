@@ -1,0 +1,16 @@
+{
+  "name": "stepfun-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "copy-ort": "node ../scripts/copy-ort.mjs",
+    "dev": "node ../scripts/copy-ort.mjs && vite --host 127.0.0.1 --port 5173",
+    "preview": "node ../scripts/copy-ort.mjs && vite preview --host 127.0.0.1 --port 5173"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+web/node_modules/
+web/public/ort/
+data/
+vendor/bindings/**/*.zip
+vendor/bindings/**/libseekdb.so
+vendor/bindings/**/seekdb.node
+vendor/ort/
+*.log
+.DS_Store

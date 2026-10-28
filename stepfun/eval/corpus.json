@@ -1,0 +1,52 @@
+[
+  {
+    "doc_id": "doc-refresh",
+    "title": "索引刷新",
+    "text": "seekdb-js 从 1.3.0 开始，向量索引默认异步构建。collection.add 返回只说明行已经写入，不说明近似检索已经能看到它。要调用 collection.refresh_index，里面是 CALL dbms_index_manager.refresh()，等这个调用结束，新段落才能被向量检索稳定命中。如果数据库版本字符串解析失败，这个方法会静默返回，调用方必须自己检查 VERSION()。"
+  },
+  {
+    "doc_id": "doc-webgpu",
+    "title": "推理后端",
+    "text": "文档向量和查询向量都在浏览器里计算，不调用云端推理接口。运行时优先申请 WebGPU adapter。申请失败或 pipeline 创建失败时，自动改用 WASM，并在页面上写明当前后端。WASM 多线程需要页面带 Cross-Origin-Opener-Policy 和 Cross-Origin-Embedder-Policy。接口通过 Vite 代理保持同源。"
+  },
+  {
+    "doc_id": "doc-quant",
+    "title": "量化",
+    "text": "默认加载 Xenova/bge-small-zh-v1.5 的 INT8 权重，文件是 onnx/model_quantized.onnx，Transformers.js 里 dtype 写 q8。对照用同一仓库的 onnx/model.onnx（FP32）和 onnx/model_fp16.onnx（FP16）。三种精度各用一个集合，集合名带精度后缀。维度都是 512，不能把 384 维的 MiniLM 写进这个集合。"
+  },
+  {
+    "doc_id": "doc-bge",
+    "title": "查询前缀",
+    "text": "BAAI/bge-small-zh-v1.5 在短查询检索长文时，建议给查询加上指令：为这个句子生成表示以用于检索相关文章：。段落不要加这句。FP32、FP16、INT8 必须使用同一规则，否则质量对比没有意义。换成 all-MiniLM 时不要加这句中文指令。"
+  },
+  {
+    "doc_id": "doc-hybrid",
+    "title": "混合检索",
+    "text": "检索只调用一次 collection.hybridSearch。全文条件是 query.whereDocument 的 $contains，在 SDK 里会变成 document 字段上的 query_string。向量条件是 knn.queryEmbeddings，向量由浏览器算好再传进来。融合用 rank.rrf。服务端不安装 default-embed、qwen 或 openai 的向量包，集合的 embeddingFunction 固定为空。"
+  },
+  {
+    "doc_id": "doc-chunk",
+    "title": "切段",
+    "text": "bge-small 的上下文大约 512 个 token。导入时按 400 个字切段，相邻段重叠 50 个字。每段单独编码，元数据里保留 doc_id、标题和段号。评测的 Recall 和 nDCG 按 doc_id 算，某一段进了前五名，就认为这篇文档命中。相关性是二值，不是分级打分。"
+  },
+  {
+    "doc_id": "doc-tea",
+    "title": "龙井",
+    "text": "西湖龙井产自杭州西湖周边的山区，明前茶在清明前采摘，芽叶细嫩。冲泡时水温不宜一直用刚滚开的水，玻璃杯里可以看茶叶慢慢沉下去。龙井和碧螺春都是绿茶，但产地和外形不一样，碧螺春的卷曲更明显。"
+  },
+  {
+    "doc_id": "doc-metro",
+    "title": "地铁",
+    "text": "上海地铁 2 号线西起徐泾东，向东经过南京东路、世纪大道，终点在浦东国际机场。虹桥火车站和虹桥 2 号航站楼也在 2 号线上。去浦东机场不要坐 1 号线，1 号线的两端是莘庄和富锦路。"
+  },
+  {
+    "doc_id": "doc-ocean",
+    "title": "太平洋",
+    "text": "太平洋是地球上面积最大的海洋，马里亚纳海沟是目前测到的最深海沟，挑战者深渊就在这条海沟里。太平洋东面是美洲，西面是亚洲和大洋洲。大西洋在美洲以东，不是这道题里最深的那一片海。"
+  },
+  {
+    "doc_id": "doc-noodle",
+    "title": "牛肉面",
+    "text": "兰州牛肉面常被说成一清二白三红四绿五黄。汤要清，萝卜要白，辣椒油要红，香菜蒜苗要绿，面条要黄。它和山西刀削面不是同一种面，刀削面看重的是面条中间厚、两边薄。"
+  }
+]

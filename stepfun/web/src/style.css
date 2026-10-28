@@ -1,0 +1,118 @@
+:root {
+  color: #1c1915;
+  background: #f6f3ec;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", serif;
+  line-height: 1.5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 28px 20px 64px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+h1, h2 { font-weight: 650; letter-spacing: 0; }
+h1 { margin: 0 0 8px; font-size: 32px; }
+h2 { margin: 0 0 12px; font-size: 20px; }
+p { margin: 0 0 12px; }
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+section {
+  background: #fffdf8;
+  border: 1px solid #e4dccb;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+label, .file {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+label.inline {
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+}
+
+input, select, textarea, button {
+  font: inherit;
+  color: inherit;
+}
+
+input, select, textarea {
+  width: 100%;
+  border: 1px solid #d9d0c1;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+label.inline input { width: 72px; }
+
+textarea { resize: vertical; }
+
+button {
+  border: 0;
+  background: #245c4a;
+  color: #f7f4ee;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.badge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #ece4d4;
+  font-size: 13px;
+}
+.badge.warn { background: #f3d2b5; }
+.badge.ok { background: #d7eadf; }
+
+.muted { color: #6d6458; font-size: 14px; }
+.progress { min-height: 1.5em; }
+.log {
+  white-space: pre-wrap;
+  background: #f3eee4;
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 88px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+article {
+  border-top: 1px solid #eee4d4;
+  padding: 10px 0;
+}
+article h3 { margin: 0 0 4px; font-size: 16px; }
+article p { margin: 0; }
+
+@media (max-width: 860px) {
+  header, main { display: block; }
+  section + section { margin-top: 18px; }
+}

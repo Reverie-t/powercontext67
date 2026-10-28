@@ -1,0 +1,110 @@
+{
+  "dtype": "q8",
+  "device": "wasm",
+  "browser": "Microsoft Edge 156.0.4314.42",
+  "gpu": "NVIDIA GeForce RTX 4060 8GB",
+  "loadMs": 455,
+  "docs": 10,
+  "queries": 10,
+  "relevance": "二值，粒度是 doc_id。一段命中就算这篇命中。",
+  "meanRecallAt5": 1,
+  "meanNdcgAt5": 1,
+  "medianRepeat": {
+    "queryEmbedMs": 17,
+    "seekdbSearchMs": 12,
+    "e2eMs": 56
+  },
+  "note": "地址 ?device=wasm 强制单线程 WASM。q-ocean 的 e2eMs 271.8 是单次毛刺，不进入预热中位数。",
+  "rows": [
+    {
+      "id": "q-refresh",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 17.54500000178814,
+      "seekdbSearchMs": 12,
+      "e2eMs": 54.375,
+      "top": "doc-refresh"
+    },
+    {
+      "id": "q-webgpu",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 18.115000009536743,
+      "seekdbSearchMs": 12,
+      "e2eMs": 57.45000000298023,
+      "top": "doc-webgpu"
+    },
+    {
+      "id": "q-quant",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 20.625,
+      "seekdbSearchMs": 17,
+      "e2eMs": 62.79500000178814,
+      "top": "doc-quant"
+    },
+    {
+      "id": "q-bge",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 18.70999999344349,
+      "seekdbSearchMs": 10,
+      "e2eMs": 53.21999999880791,
+      "top": "doc-bge"
+    },
+    {
+      "id": "q-hybrid",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 20.765000000596046,
+      "seekdbSearchMs": 13,
+      "e2eMs": 58.810000002384186,
+      "top": "doc-hybrid"
+    },
+    {
+      "id": "q-chunk",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 18.21500000357628,
+      "seekdbSearchMs": 10,
+      "e2eMs": 59.86499999463558,
+      "top": "doc-chunk"
+    },
+    {
+      "id": "q-tea",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 16.200000002980232,
+      "seekdbSearchMs": 12,
+      "e2eMs": 58.25,
+      "top": "doc-tea"
+    },
+    {
+      "id": "q-metro",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 15.774999991059303,
+      "seekdbSearchMs": 8,
+      "e2eMs": 47.57500000298023,
+      "top": "doc-metro"
+    },
+    {
+      "id": "q-ocean",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 16.319999992847443,
+      "seekdbSearchMs": 11,
+      "e2eMs": 271.76500000059605,
+      "top": "doc-ocean"
+    },
+    {
+      "id": "q-noodle",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 19.439999997615814,
+      "seekdbSearchMs": 15,
+      "e2eMs": 58.309999987483025,
+      "top": "doc-noodle"
+    }
+  ]
+}

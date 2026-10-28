@@ -1,0 +1,13 @@
+{
+  "model": "Xenova/bge-small-zh-v1.5",
+  "base_model": "BAAI/bge-small-zh-v1.5",
+  "scope": "只比较单个 ONNX 权重文件。tokenizer 三种精度共用，不放进压缩比。",
+  "bytes": {
+    "onnx/model.onnx": 94851877,
+    "onnx/model_fp16.onnx": 47497427,
+    "onnx/model_quantized.onnx": 24010842
+  },
+  "compression_ratio_fp32_over_q8": 3.9503769588754944,
+  "compression_ratio_fp32_over_fp16": 1.9969897948366762,
+  "measured_at": "2026-10-28T07:15:19.583Z"
+}

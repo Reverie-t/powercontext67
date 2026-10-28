@@ -1,0 +1,109 @@
+{
+  "dtype": "fp32",
+  "device": "webgpu",
+  "browser": "Microsoft Edge 156.0.4314.42",
+  "gpu": "NVIDIA GeForce RTX 4060 8GB",
+  "loadMs": 6868,
+  "docs": 10,
+  "queries": 10,
+  "relevance": "二值，粒度是 doc_id。一段命中就算这篇命中。",
+  "meanRecallAt5": 1,
+  "meanNdcgAt5": 1,
+  "medianRepeat": {
+    "queryEmbedMs": 8,
+    "seekdbSearchMs": 13,
+    "e2eMs": 50
+  },
+  "rows": [
+    {
+      "id": "q-refresh",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 8.165000006556511,
+      "seekdbSearchMs": 10,
+      "e2eMs": 42.314999997615814,
+      "top": "doc-refresh"
+    },
+    {
+      "id": "q-webgpu",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 8.319999992847443,
+      "seekdbSearchMs": 12,
+      "e2eMs": 46.07500000298023,
+      "top": "doc-webgpu"
+    },
+    {
+      "id": "q-quant",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 8.189999997615814,
+      "seekdbSearchMs": 15,
+      "e2eMs": 52.64000000059605,
+      "top": "doc-quant"
+    },
+    {
+      "id": "q-bge",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 10.03999999165535,
+      "seekdbSearchMs": 12,
+      "e2eMs": 52.684999987483025,
+      "top": "doc-bge"
+    },
+    {
+      "id": "q-hybrid",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 8.349999994039536,
+      "seekdbSearchMs": 11,
+      "e2eMs": 42.54500000178814,
+      "top": "doc-hybrid"
+    },
+    {
+      "id": "q-chunk",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 8.075000002980232,
+      "seekdbSearchMs": 12,
+      "e2eMs": 45.33999998867512,
+      "top": "doc-chunk"
+    },
+    {
+      "id": "q-tea",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 7.564999997615814,
+      "seekdbSearchMs": 12,
+      "e2eMs": 43.310000002384186,
+      "top": "doc-tea"
+    },
+    {
+      "id": "q-metro",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 7.615000009536743,
+      "seekdbSearchMs": 13,
+      "e2eMs": 45.62000000476837,
+      "top": "doc-metro"
+    },
+    {
+      "id": "q-ocean",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 8.355000004172325,
+      "seekdbSearchMs": 14,
+      "e2eMs": 53.25499999523163,
+      "top": "doc-ocean"
+    },
+    {
+      "id": "q-noodle",
+      "recallAt5": 1,
+      "ndcgAt5": 1,
+      "queryEmbedMs": 7.620000004768372,
+      "seekdbSearchMs": 13,
+      "e2eMs": 81.98000000417233,
+      "top": "doc-noodle"
+    }
+  ]
+}

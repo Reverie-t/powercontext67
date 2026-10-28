@@ -1,0 +1,197 @@
+{
+  "product": "科研周报助手",
+  "development_tool": "Qoder CN CLI 1.1.80",
+  "branch": "qoder-research-weekly",
+  "sessions": [
+    "2e6369c5-1f51-4db2-890b-5f830eb3f767",
+    "716f512d-7119-4419-8caf-94626fc85ffc"
+  ],
+  "scope": "从实际 CLI stream-json 记录提取工具调用与最终文件哈希；不包含模型思考、凭据或虚构对话。工具调用摘录本身不代表每条命令成功，验证结果需结合验收记录。",
+  "attribution": "应用主要源码由真实 Qoder CN 会话创建和修改。需求文档、独立验收与 Git 交付由 Codex 协助组织。",
+  "source_logs": [
+    {
+      "file": "qoder-build-continued.jsonl",
+      "sha256": "a0cdaa2fc9ff59ea89c5c21d2d1784fb540def2ecd67f5c40a10aa0e4f7a3c21"
+    },
+    {
+      "file": "qoder-build-stream.jsonl",
+      "sha256": "3a43bc2c741ab798f2c46bd42119478e50a1f6ba929e51c8b580952ef8f56cef"
+    },
+    {
+      "file": "qoder-finish-stream.jsonl",
+      "sha256": "994122579428dbd227ba7c5d181d344170d5b264688033528c55d6a4d393c498"
+    },
+    {
+      "file": "qoder-publication-stream.jsonl",
+      "sha256": "e5cbeadd474938b5fce3ffea6be3a8650134914ae4a78595dc3fc23801a47e34"
+    },
+    {
+      "file": "qoder-review-stream.jsonl",
+      "sha256": "4a9b83ef80a7bb4fcfae235c3e19ebbd8bab66b14469401eeafc07c6a1bf141e"
+    }
+  ],
+  "qoder_written_files": [
+    {
+      "path": "qoder/README.md",
+      "sha256": "86f1ce2f191b3cdb4007e5888af717175842635ca6f88dc58546c31029299b48"
+    },
+    {
+      "path": "qoder/docs/PUBLICATION.json",
+      "sha256": "f41c09bd3a0fed039c99491f00d0a77b495b3789b3bdd952589125a675e71ece"
+    },
+    {
+      "path": "qoder/docs/QODER_DEVELOPMENT.md",
+      "sha256": "a00c017470445cf8550801f4543a8eb2a29c1e2c1cd15fed6d9d79a105bcd2ee"
+    },
+    {
+      "path": "qoder/requirements.txt",
+      "sha256": "eaaf3ee97c08f1bf7152bb69771a3586df5d3eef57df386e1b5a3369a56c09eb"
+    },
+    {
+      "path": "qoder/scripts/init_sample_data.py",
+      "sha256": "17b9534eec968a793f6d8b870446cc6442353699e43c3afaa2a56f97b795fb26"
+    },
+    {
+      "path": "qoder/site/demo.js",
+      "sha256": "014ae846007329aff8f9b4450fb6b06b65f11e013fe656586cb72ffa7bd50bff"
+    },
+    {
+      "path": "qoder/site/index.html",
+      "sha256": "ee191eb3c58631d3a5cdd0e4926500a638bc5e20bcd9e162f1da5fb637f5fdf9"
+    },
+    {
+      "path": "qoder/site/style.css",
+      "sha256": "c5b059007207ef20ef69c171e155f924b07a7ea1d4545e1b62d171a06fe4d98d"
+    },
+    {
+      "path": "qoder/src/powercontext_service.py",
+      "sha256": "96bfe30929a2ee1838138cf3c1c6c6c4ab8c78c496ec16bf6a0d20294f4b461d"
+    },
+    {
+      "path": "qoder/src/server.py",
+      "sha256": "924e32719c50195f3c038dd58d13c27ce703b12b28b2568e2da7d64b4040c5d3"
+    },
+    {
+      "path": "qoder/src/weekly_assistant.py",
+      "sha256": "e80f3b267288898dc00b1860772c716f9fddfa80705d9b3fb1ec41a313c0cd15"
+    },
+    {
+      "path": "qoder/static/app.js",
+      "sha256": "fe70f9f11695f4ee6191f9bfff564b32e87c24250762534bbe4081ec6bfa86fa"
+    },
+    {
+      "path": "qoder/static/index.html",
+      "sha256": "1a2d2fce1b48b47ecfd653f39d598d66f560ead8d15646acd049cf8331e9879a"
+    },
+    {
+      "path": "qoder/static/style.css",
+      "sha256": "6c978b9fc046561ff282d385502f485b7e8febb2548065bef4d5052f455e3924"
+    },
+    {
+      "path": "qoder/tests/test_acceptance.py",
+      "sha256": "6a0ae6617e017a5aa53a283f910b33195078709596f1f72137c4e4e0942fd3a5"
+    }
+  ],
+  "verification_command_attempts": [
+    {
+      "description": "Check venv packages",
+      "command": "qoder/.venv/Scripts/pip.exe list 2>&1 | grep -iE \"(power|pytest|sqlalchemy)\""
+    },
+    {
+      "description": "Install powercontext in venv",
+      "command": "qoder/.venv/Scripts/pip.exe install \"powercontext[server,client]==1.4.1\" pytest 2>&1 | tail -20"
+    },
+    {
+      "description": "Install with Tsinghua mirror",
+      "command": "qoder/.venv/Scripts/pip.exe install -i https://pypi.tuna.tsinghua.edu.cn/simple \"powercontext[server,client]==1.4.1\" pytest 2>&1 | tail -20"
+    },
+    {
+      "description": "Check if installation completed",
+      "command": "qoder/.venv/Scripts/pip.exe list 2>&1 | grep -iE \"(power|pytest)\" | head -5"
+    },
+    {
+      "description": "Test minimal PowerContext service",
+      "command": "qoder/.venv/Scripts/python.exe -c \"\nimport asyncio\nfrom pathlib import Path\nimport sys\nsys.path.insert(0, 'qoder/src')\nfrom powercontext_service import PowerContextService\n\nasync def test():\n    svc = PowerContextService(Path('qoder/data/test_minimal'))\n    await svc.start()\n    print(f'Server started at {svc.base_url}')\n    \n    # Create a scope\n    scope_id = await svc.create_scope('测试项目', '用于验证最小 API')\n    print(f'Created scope: {scope_id}')\n    \n    # Remember something\n    result = await svc.remember(scope_id, 'preference', '中文、简洁汇报', '用户偏好')\n    print(f'Remembered: {result}')\n    \n    # Search\n    hits = await svc.search(scope_id, '中文')\n    print(f'Search hits: {len(hits)}')\n    \n    await svc.stop()\n    print('Server stopped')\n\nasyncio.run(test())\n\" 2>&1"
+    },
+    {
+      "description": "Test PowerContext service again",
+      "command": "qoder/.venv/Scripts/python.exe -c \"\nimport asyncio\nfrom pathlib import Path\nimport sys\nsys.path.insert(0, 'qoder/src')\nfrom powercontext_service import PowerContextService\n\nasync def test():\n    svc = PowerContextService(Path('qoder/data/test_minimal'))\n    await svc.start()\n    print(f'Server started at {svc.base_url}')\n    \n    # Create a scope\n    scope_id = await svc.create_scope('测试项目', '用于验证最小 API')\n    print(f'Created scope: {scope_id}')\n    \n    # Remember something\n    result = await svc.remember(scope_id, 'preference', '中文、简洁汇报', '用户偏好')\n    print(f'Remembered: {result}')\n    \n    # Search\n    hits = await svc.search(scope_id, '中文')\n    print(f'Search hits: {len(hits)}')\n    if hits:\n        print(f'First hit: {hits[0]}')\n    \n    await svc.stop()\n    print('Server stopped')\n\nasyncio.run(test())\n\" 2>&1"
+    },
+    {
+      "description": "Test PowerContext service",
+      "command": "qoder/.venv/Scripts/python.exe -c \"\nimport asyncio\nfrom pathlib import Path\nimport sys\nsys.path.insert(0, 'qoder/src')\nfrom powercontext_service import PowerContextService\n\nasync def test():\n    svc = PowerContextService(Path('qoder/data/test_minimal'))\n    await svc.start()\n    print(f'Server started at {svc.base_url}')\n    \n    # Create a scope\n    scope_id = await svc.create_scope('测试项目', '用于验证最小 API')\n    print(f'Created scope: {scope_id}')\n    \n    # Remember something\n    result = await svc.remember(scope_id, 'preference', '中文、简洁汇报', '用户偏好')\n    print(f'Remembered: {result}')\n    \n    # Search\n    hits = await svc.search(scope_id, '中文')\n    print(f'Search hits: {len(hits)}')\n    if hits:\n        print(f'First hit: {hits[0]}')\n    \n    await svc.stop()\n    print('Server stopped')\n\nasyncio.run(test())\n\" 2>&1"
+    },
+    {
+      "description": "Run acceptance tests",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py -v --tb=short 2>&1 | head -100"
+    },
+    {
+      "description": "Run single test",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py::test_create_project -v --tb=short 2>&1"
+    },
+    {
+      "description": "Install pytest-asyncio",
+      "command": "qoder/.venv/Scripts/pip.exe install pytest-asyncio 2>&1 | tail -3"
+    },
+    {
+      "description": "Check pytest packages",
+      "command": "qoder/.venv/Scripts/pip.exe list 2>&1 | grep pytest"
+    },
+    {
+      "description": "Run single test again",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py::test_create_project -v 2>&1"
+    },
+    {
+      "description": "Run all acceptance tests",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py -v 2>&1 | tail -50"
+    },
+    {
+      "description": "Check test_add_record error",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py::test_add_record -v --tb=short 2>&1 | grep -A 20 \"FAILED\\|TypeError\""
+    },
+    {
+      "description": "Check installed package versions",
+      "command": "cd \"$REPO\\qoder\" && .venv/Scripts/python.exe -c \"\nimport importlib.metadata as m\npkgs = ['powercontext', 'fastapi', 'uvicorn', 'pydantic', 'pydantic-settings', 'aiosqlite', 'httpx', 'pytest', 'pytest-asyncio']\nfor p in pkgs:\n    try:\n        print(f'{p}=={m.version(p)}')\n    except Exception as e:\n        print(f'{p}: not found ({e})')\n\""
+    },
+    {
+      "description": "Run acceptance tests",
+      "command": "cd \"$REPO\\qoder\" && .venv/Scripts/python.exe -m pytest tests/test_acceptance.py -v --tb=short 2>&1 | head -100"
+    },
+    {
+      "description": "Run full test suite including restart test",
+      "command": "cd \"$REPO\\qoder\" && .venv/Scripts/python.exe tests/test_acceptance.py 2>&1 | tail -30"
+    },
+    {
+      "description": "Init sample data with fresh directory",
+      "command": "cd \"$REPO\\qoder\" && RESEARCH_WEEKLY_DATA_DIR=\"$REPO\\qoder\\test_data\" .venv/Scripts/python.exe scripts/init_sample_data.py 2>&1"
+    },
+    {
+      "description": "Start server and test health endpoint",
+      "command": "cd \"$REPO\\qoder\" && RESEARCH_WEEKLY_DATA_DIR=\"$REPO\\qoder\\test_data\" .venv/Scripts/python.exe src/server.py --port 8001 2>&1 &\nsleep 5\ncurl -s http://127.0.0.1:8001/api/health 2>&1"
+    },
+    {
+      "description": "Check test data directory",
+      "command": "ls \"$REPO\\qoder\\test_data\" 2>&1 | head -5"
+    },
+    {
+      "description": "Test backend changes",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -c \"\nimport asyncio\nimport sys\nfrom pathlib import Path\nimport tempfile\nimport shutil\n\nsys.path.insert(0, 'qoder/src')\nfrom weekly_assistant import ResearchWeeklyAssistant\n\nasync def test():\n    temp_dir = Path(tempfile.mkdtemp())\n    assistant = ResearchWeeklyAssistant(temp_dir)\n    await assistant.initialize()\n    \n    # Create project with preference\n    project = await assistant.create_project('Test', 'Direction', 'Chinese, concise')\n    print(f'Created project: {project[\\\"id\\\"]}')\n    \n    # Add a plan record (will be stored as decision kind in PowerContext)\n    record = await assistant.add_record(project['id'], '2026-10-23', 'plan', 'Expand query set')\n    print(f'Added plan record: {record.id}, memory: {record.memory_artifact_id}')\n    \n    # List memories to verify\n    memories = await assistant.get_memory_evidence(project['id'])\n    print(f'Total memories: {len(memories)}')\n    for m in memories:\n        print(f'  - kind={m[\\\"kind\\\"]}, state={m[\\\"state\\\"]}, text={m[\\\"text\\\"][:50]}')\n    \n    # Generate report\n    report = await assistant.generate_weekly_report(project['id'], '2026-10-19', '2026-10-25')\n    print(f'Generated report: {report.id}')\n    print(f'Memory refs: {len(report.memory_refs)}')\n    \n    # Test task completion\n    decision_memories = [m for m in memories if m['kind'] == 'decision']\n    if decision_memories:\n        mem = decision_memories[0]\n        result = await assistant.complete_task(project['id'], mem['artifact_id'], mem['revision'], 'Completed')\n        print(f'Task completed: {result[\\\"state\\\"]}')\n    \n    # Verify task is no longer in active todos\n    memories_after = await assistant.get_memory_evidence(project['id'])\n    active_decisions = [m for m in memories_after if m['kind'] == 'decision' and m['state'] == 'active']\n    print(f'Active decisions after completion: {len(active_decisions)}')\n    \n    await assistant.shutdown()\n    shutil.rmtree(temp_dir, ignore_errors=True)\n    print('Test passed!')\n\nasyncio.run(test())\n\" 2>&1"
+    },
+    {
+      "description": "Run full test suite",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py -v 2>&1 | tail -80"
+    },
+    {
+      "description": "Check test_add_record_invalid_project error",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py::test_add_record_invalid_project -v --tb=short 2>&1 | grep -A 15 \"FAILED\\|TypeError\""
+    },
+    {
+      "description": "Check test_memory_evidence error",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py::test_memory_evidence -v --tb=short 2>&1 | grep -A 15 \"FAILED\\|AssertionError\""
+    },
+    {
+      "description": "Run tests again",
+      "command": "cd \"$REPO\" && qoder/.venv/Scripts/python.exe -m pytest qoder/tests/test_acceptance.py -v 2>&1 | tail -20"
+    }
+  ]
+}

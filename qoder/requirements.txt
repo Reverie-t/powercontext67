@@ -1,0 +1,12 @@
+# 科研周报助手 Python 依赖
+# 使用 PowerContext 1.4.1 正式版
+
+powercontext[server,client]==1.4.1
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.1
+pydantic-settings==2.16.1
+aiosqlite==0.22.1
+httpx==0.28.1
+pytest==9.2.0
+pytest-asyncio==1.4.1

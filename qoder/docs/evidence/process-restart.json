@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "synthetic_data": true,
+  "python": "3.11.9",
+  "powercontext": "1.4.1",
+  "checks": [
+    "无关键词任务及偏好按真实类型召回",
+    "本周与未来日期隔离",
+    "PowerContext偏好实际改变量化结果排序",
+    "偏好更新及任务完成保存为真实PowerContext新版本",
+    "项目记忆隔离且结果非空",
+    "错误日期范围被拒绝",
+    "终止完整应用进程后仍读取真实记忆新版本",
+    "已完成任务不再继承且待办仍保留",
+    "过期版本更新被拒绝"
+  ],
+  "memory_refs_after_restart": [
+    {
+      "type": "preference",
+      "artifact_id": "art_173e19e567cb471686fc94c97fe5b668",
+      "revision": 2,
+      "text": "先列量化结果；标明合成数据与来源"
+    },
+    {
+      "type": "todo",
+      "artifact_id": "art_37c5f49b709d4f5a822957879f770fd0",
+      "revision": 1,
+      "text": "[2026-10-24] 对照检查长查询失败样例"
+    }
+  ],
+  "completed_task": {
+    "artifact_id": "art_ed40c59e8cb84a16af399913190d5d67",
+    "revision": 2,
+    "text": "[2026-10-23] 扩大查询集并按长度分组",
+    "kind": "completed-task",
+    "state": "active"
+  }
+}

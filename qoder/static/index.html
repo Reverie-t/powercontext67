@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科研周报助手</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>科研周报助手</h1>
+            <p class="subtitle">基于 PowerContext 的科研项目周报生成工具</p>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <div class="container">
+            <button class="tab active" data-tab="projects" type="button">研究项目</button>
+            <button class="tab" data-tab="records" type="button">研究记录</button>
+            <button class="tab" data-tab="reports" type="button">周报管理</button>
+            <button class="tab" data-tab="memory" type="button">记忆证据</button>
+            <button class="tab" data-tab="about" type="button">关于</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div id="global-error" class="alert alert-error hidden" role="alert"></div>
+        <div id="global-info" class="alert alert-info hidden" role="status"></div>
+
+        <!-- 项目面板 -->
+        <section id="projects-panel" class="panel active" aria-label="研究项目">
+            <div class="panel-header">
+                <h2>研究项目</h2>
+                <button class="btn btn-primary" id="new-project-btn" type="button">新建项目</button>
+            </div>
+
+            <div id="new-project-form" class="form-card hidden">
+                <h3>新建研究项目</h3>
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-name">项目名称</label>
+                        <input type="text" id="project-name" name="name" required placeholder="例如：混合检索实验" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="project-direction">研究方向</label>
+                        <textarea id="project-direction" name="direction" required placeholder="例如：中文科研笔记的混合检索"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-preferences">汇报偏好</label>
+                        <textarea id="project-preferences" name="preferences" required placeholder="例如：中文、简洁；先列量化结果；未完成任务必须出现在下周计划中"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">创建</button>
+                        <button type="button" class="btn" id="cancel-project-btn">取消</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="projects-list" class="cards-grid"></div>
+        </section>
+
+        <!-- 记录面板 -->
+        <section id="records-panel" class="panel" aria-label="研究记录">
+            <div class="panel-header">
+                <h2>研究记录</h2>
+                <button class="btn btn-primary" id="new-record-btn" type="button" disabled>添加记录</button>
+            </div>
+
+            <div class="filter-bar">
+                <label for="record-project-select">选择项目：</label>
+                <select id="record-project-select">
+                    <option value="">-- 请先选择项目 --</option>
+                </select>
+            </div>
+
+            <div id="new-record-form" class="form-card hidden">
+                <h3>添加研究记录</h3>
+                <form id="record-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="record-date">日期</label>
+                            <input type="date" id="record-date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="record-type">类型</label>
+                            <select id="record-type" name="record_type" required>
+                                <option value="experiment">实验记录</option>
+                                <option value="literature">文献阅读</option>
+                                <option value="issue">问题与风险</option>
+                                <option value="plan">计划与待办</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-content">内容</label>
+                        <textarea id="record-content" name="content" required placeholder="详细描述实验、文献、问题或计划"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">保存</button>
+                        <button type="button" class="btn" id="cancel-record-btn">取消</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="records-list" class="records-list"></div>
+        </section>
+
+        <!-- 周报面板 -->
+        <section id="reports-panel" class="panel" aria-label="周报管理">
+            <div class="panel-header">
+                <h2>周报管理</h2>
+                <button class="btn btn-primary" id="generate-report-btn" type="button" disabled>生成周报</button>
+            </div>
+
+            <div class="filter-bar">
+                <label for="report-project-select">选择项目：</label>
+                <select id="report-project-select">
+                    <option value="">-- 请先选择项目 --</option>
+                </select>
+            </div>
+
+            <div id="generate-report-form" class="form-card hidden">
+                <h3>生成周报</h3>
+                <form id="report-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="week-start">开始日期</label>
+                            <input type="date" id="week-start" name="week_start" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="week-end">结束日期</label>
+                            <input type="date" id="week-end" name="week_end" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">生成</button>
+                        <button type="button" class="btn" id="cancel-report-btn">取消</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="reports-list" class="reports-list"></div>
+
+            <div id="report-viewer" class="report-viewer hidden">
+                <div class="viewer-header">
+                    <h3 id="report-title">周报预览</h3>
+                    <div class="viewer-actions">
+                        <button class="btn" id="edit-report-btn" type="button">编辑</button>
+                        <button class="btn" id="save-report-btn" type="button" disabled>保存</button>
+                        <button class="btn" id="export-report-btn" type="button">导出 Markdown</button>
+                        <button class="btn" id="close-viewer-btn" type="button">关闭</button>
+                    </div>
+                </div>
+                <div class="viewer-content">
+                    <div id="report-preview" class="markdown-preview"></div>
+                    <textarea id="report-editor" class="markdown-editor hidden" aria-label="周报 Markdown 编辑"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- 记忆证据面板 -->
+        <section id="memory-panel" class="panel" aria-label="记忆证据">
+            <div class="panel-header">
+                <h2>PowerContext 记忆证据</h2>
+            </div>
+
+            <div class="filter-bar">
+                <label for="memory-project-select">选择项目：</label>
+                <select id="memory-project-select">
+                    <option value="">-- 请先选择项目 --</option>
+                </select>
+                <button class="btn" id="refresh-memory-btn" type="button" disabled>刷新</button>
+            </div>
+
+            <div id="memory-list" class="memory-list"></div>
+        </section>
+
+        <!-- 关于面板 -->
+        <section id="about-panel" class="panel" aria-label="关于">
+            <h2>关于科研周报助手</h2>
+            <div class="about-content">
+                <h3>功能介绍</h3>
+                <p>科研周报助手是一个面向科研人员的工作台工具，帮助管理分散的实验记录、文献阅读、问题与待办，并自动生成有出处、可修改、可导出的周报。</p>
+
+                <h3>核心特性</h3>
+                <ul>
+                    <li><strong>真实记忆持久化</strong>：使用 PowerContext 1.4.1 存储项目偏好、研究记录和待办事项，支持跨会话、跨服务重启读取</li>
+                    <li><strong>项目隔离</strong>：每个研究项目独立的 scope，记忆互不干扰</li>
+                    <li><strong>按周生成周报</strong>：选择日期范围，自动整理本周记录和历史待办</li>
+                    <li><strong>任务完成与偏好更新</strong>：已完成的任务不再进入后续周报；偏好修订后立即生效</li>
+                    <li><strong>可编辑导出</strong>：周报支持 Markdown 编辑和导出</li>
+                    <li><strong>记忆证据透明</strong>：清晰展示 PowerContext 的读写引用</li>
+                </ul>
+
+                <h3>生成模式说明</h3>
+                <p>当前版本使用<strong>规则模式</strong>生成周报，不调用大语言模型：</p>
+                <ul>
+                    <li>自动应用：量化结果优先排序（当偏好包含"量化"或"结果"时）</li>
+                    <li>人工参考：其他自由文本偏好（语言、风格等）显示在周报中供人工检查</li>
+                    <li>不声称自动翻译、智能总结或语义理解</li>
+                </ul>
+
+                <h3>技术栈</h3>
+                <ul>
+                    <li>后端：Python 3.11 + FastAPI + PowerContext 1.4.1</li>
+                    <li>存储：SQLite（PowerContext 内置）+ JSON（业务数据）</li>
+                    <li>前端：原生 HTML/CSS/JavaScript</li>
+                </ul>
+
+                <h3>运行说明</h3>
+                <p>本地运行需要 Python 3.11+，安装依赖后执行：</p>
+                <pre><code>qoder/.venv/Scripts/python.exe qoder/src/server.py</code></pre>
+                <p>访问 <a href="http://127.0.0.1:8000" target="_blank" rel="noopener">http://127.0.0.1:8000</a></p>
+                <p>可指定独立数据目录：</p>
+                <pre><code>set RESEARCH_WEEKLY_DATA_DIR=C:\path\to\data
+qoder/.venv/Scripts/python.exe qoder/src/server.py</code></pre>
+
+                <h3>仓库与文档</h3>
+                <p>代码仓库：<a href="https://github.com/Reverie-t/powercontext67/tree/qoder-research-weekly/qoder" target="_blank" rel="noopener">github.com/Reverie-t/powercontext67 (qoder-research-weekly/qoder)</a></p>
+                <p>开发分支：<code>qoder-research-weekly</code></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>科研周报助手 · 基于 PowerContext · 2026 OceanBase Qoder 赛道</p>
+        </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

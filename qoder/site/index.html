@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科研周报助手 - 基于 PowerContext 的科研周报生成工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>科研周报助手</h1>
+            <p class="tagline">基于 PowerContext 的科研项目周报生成工具</p>
+            <div class="badges">
+                <span class="badge">PowerContext 1.4.1</span>
+                <span class="badge">Python 3.11+</span>
+                <span class="badge">SQLite 持久化</span>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="container">
+            <a href="#features">核心功能</a>
+            <a href="#demo">交互演示</a>
+            <a href="#run">本地运行</a>
+            <a href="#evidence">验收证据</a>
+            <a href="#repo">代码仓库</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>让科研周报有据可查、有迹可循</h2>
+                <p>科研周报助手帮助科研人员管理分散的实验记录、文献阅读、问题与待办，自动生成有出处、可修改、可导出的周报，并在下一次使用时继续使用已保存的研究方向、汇报偏好和未完成事项。</p>
+                <div class="cta-group">
+                    <a href="#run" class="cta-primary">本地运行指南</a>
+                    <a href="#demo" class="cta-secondary">查看交互演示</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="pain-points" class="section">
+            <div class="container">
+                <h2>科研周报的痛点</h2>
+                <div class="pain-grid">
+                    <div class="pain-card">
+                        <h3>记录分散</h3>
+                        <p>实验数据、文献笔记、问题思考散落在不同工具和文件中，整理周报时需要反复翻找。</p>
+                    </div>
+                    <div class="pain-card">
+                        <h3>偏好难记</h3>
+                        <p>每次汇报都要重新说明语言风格、重点顺序、格式要求，导师或团队的偏好难以持续遵循。</p>
+                    </div>
+                    <div class="pain-card">
+                        <h3>待办丢失</h3>
+                        <p>上周未完成的任务、待验证的假设、计划中的实验，换一周就容易遗忘或遗漏。</p>
+                    </div>
+                    <div class="pain-card">
+                        <h3>缺乏出处</h3>
+                        <p>周报中的结论和数据缺乏原始记录支撑，回溯困难，难以验证和审计。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="section bg-alt">
+            <div class="container">
+                <h2>核心功能</h2>
+                <div class="feature-grid">
+                    <div class="feature">
+                        <h3>项目管理</h3>
+                        <p>为每个研究方向创建独立项目，设置汇报偏好（语言、风格、重点），偏好通过 PowerContext 持久化存储。</p>
+                    </div>
+                    <div class="feature">
+                        <h3>分类记录</h3>
+                        <p>按日期和类型（实验、文献、问题、计划）添加研究记录，每条记录保留稳定编号和原始文本。</p>
+                    </div>
+                    <div class="feature">
+                        <h3>周报生成</h3>
+                        <p>选择日期范围，自动整理本周记录，读取 PowerContext 中的偏好和历史待办，生成结构化 Markdown 周报。</p>
+                    </div>
+                    <div class="feature">
+                        <h3>可编辑导出</h3>
+                        <p>周报支持在线编辑和 Markdown 导出，方便进一步修改或提交。</p>
+                    </div>
+                    <div class="feature">
+                        <h3>跨周延续</h3>
+                        <p>未完成的计划自动进入下周待办，偏好设置持续生效，无需重复输入。</p>
+                    </div>
+                    <div class="feature">
+                        <h3>记忆证据</h3>
+                        <p>清晰展示 PowerContext 的读写引用，包括 artifact ID、revision 和状态，透明可追溯。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="demo" class="section">
+            <div class="container">
+                <h2>交互演示</h2>
+                <div class="demo-notice">
+                    <strong>模拟演示：</strong>以下为浏览器内合成数据演示，模拟两周研究流程。<strong>未调用真实 PowerContext 服务</strong>，不产生任何持久化数据。完整功能需在本地应用中验证。
+                </div>
+                
+                <div class="demo-container">
+                    <div class="demo-steps">
+                        <button class="demo-step active" data-step="1">1. 创建项目</button>
+                        <button class="demo-step" data-step="2">2. 添加记录</button>
+                        <button class="demo-step" data-step="3">3. 生成第一周周报</button>
+                        <button class="demo-step" data-step="4">4. 重启后生成第二周周报</button>
+                    </div>
+                    
+                    <div class="demo-content">
+                        <div class="demo-panel active" id="demo-step-1">
+                            <h3>步骤 1：创建研究项目</h3>
+                            <div class="demo-form">
+                                <div class="demo-field">
+                                    <label>项目名称</label>
+                                    <input type="text" value="混合检索实验" readonly>
+                                </div>
+                                <div class="demo-field">
+                                    <label>研究方向</label>
+                                    <textarea readonly>中文科研笔记的混合检索</textarea>
+                                </div>
+                                <div class="demo-field">
+                                    <label>汇报偏好</label>
+                                    <textarea readonly>中文、简洁；先列量化结果；未完成任务必须出现在下周计划中</textarea>
+                                </div>
+                                <button class="demo-btn" onclick="nextDemoStep(2)">创建项目 →</button>
+                            </div>
+                            <div class="demo-result">
+                                <p><strong>PowerContext 操作：</strong></p>
+                                <ul>
+                                    <li>创建 scope：<code>scp_xxxxx</code></li>
+                                    <li>保存偏好记忆：<code>preference</code> 类型</li>
+                                    <li>持久化到 SQLite</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="demo-panel" id="demo-step-2">
+                            <h3>步骤 2：添加第一周研究记录</h3>
+                            <div class="demo-records">
+                                <div class="demo-record">
+                                    <span class="demo-date">2026-10-20</span>
+                                    <span class="demo-type experiment">实验</span>
+                                    <p>在合成数据集上，关键词检索 Recall@10 为 0.62，混合检索为 0.74；本轮仅测试 100 条查询，尚未做显著性检验</p>
+                                </div>
+                                <div class="demo-record">
+                                    <span class="demo-date">2026-10-21</span>
+                                    <span class="demo-type literature">文献</span>
+                                    <p>阅读样例文献摘要，整理稀疏与稠密检索的差异。该记录是演示资料，无真实 DOI</p>
+                                </div>
+                                <div class="demo-record">
+                                    <span class="demo-date">2026-10-23</span>
+                                    <span class="demo-type issue">问题</span>
+                                    <p>长查询结果不稳定，计划扩大查询集并按长度分组</p>
+                                </div>
+                            </div>
+                            <button class="demo-btn" onclick="nextDemoStep(3)">添加记录并生成周报 →</button>
+                            <div class="demo-result">
+                                <p><strong>PowerContext 操作：</strong></p>
+                                <ul>
+                                    <li>保存 3 条记忆（observation, reference, constraint）</li>
+                                    <li>每条记录关联到项目 scope</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="demo-panel" id="demo-step-3">
+                            <h3>步骤 3：生成第一周周报（2026-10-19 至 2026-10-25）</h3>
+                            <div class="demo-report-preview">
+                                <pre><code># 混合检索实验 周报
+**周期**：2026-10-19 至 2026-10-25
+**研究方向**：中文科研笔记的混合检索
+
+## 本周进展
+
+### 实验记录
+- **2026-10-20**：在合成数据集上，关键词检索 Recall@10 为 0.62，混合检索为 0.74...
+
+### 文献阅读
+- **2026-10-21**：阅读样例文献摘要，整理稀疏与稠密检索的差异...
+
+### 问题与风险
+- **2026-10-23**：长查询结果不稳定，计划扩大查询集并按长度分组
+
+## 下周计划
+
+### 延续待办（来自历史记忆）
+- 扩大查询集并按长度分组
+
+## 记忆引用证据
+- PowerContext 上下文状态：ready
+- 引用偏好数：1
+- 引用待办数：1</code></pre>
+                            </div>
+                            <button class="demo-btn" onclick="nextDemoStep(4)">服务重启，进入第二周 →</button>
+                        </div>
+
+                        <div class="demo-panel" id="demo-step-4">
+                            <h3>步骤 4：重启后生成第二周周报（2026-10-26 至 2026-11-01）</h3>
+                            <div class="demo-restart-notice">
+                                <p><strong>服务已重启</strong>，PowerContext 从 SQLite 恢复数据。不重新输入偏好，直接生成第二周周报。</p>
+                            </div>
+                            <div class="demo-report-preview">
+                                <pre><code># 混合检索实验 周报
+**周期**：2026-10-26 至 2026-11-01
+**研究方向**：中文科研笔记的混合检索
+
+## 本周进展
+
+### 实验记录
+- **2026-10-27**：扩充至 200 条查询，尚未完成长度分组分析
+
+## 下周计划
+
+### 延续待办（来自历史记忆）
+- 扩大查询集并按长度分组 <span class="demo-highlight">← 从 PowerContext 读取</span>
+- 完成长度分组分析
+
+## 汇报说明
+- 中文、简洁；先列量化结果；未完成任务必须出现在下周计划中 <span class="demo-highlight">← 偏好自动应用</span>
+
+## 记忆引用证据
+- PowerContext 上下文状态：ready
+- 引用偏好数：1
+- 引用待办数：2</code></pre>
+                            </div>
+                            <div class="demo-success">
+                                <p>✓ 偏好从 PowerContext 自动读取并应用</p>
+                                <p>✓ 第一周未完成的任务出现在第二周计划中</p>
+                                <p>✓ 没有把第一周实验数字当作第二周新增成果</p>
+                                <p>✓ 记忆证据显示实际 PowerContext 读取的引用</p>
+                            </div>
+                            <button class="demo-btn" onclick="resetDemo()">重新开始演示</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="run" class="section bg-alt">
+            <div class="container">
+                <h2>本地运行指南</h2>
+                <div class="run-steps">
+                    <div class="run-step">
+                        <h3>1. 环境要求</h3>
+                        <ul>
+                            <li>Python 3.11 或更高版本</li>
+                            <li>Git（用于克隆仓库）</li>
+                            <li>现代浏览器（Chrome、Firefox、Edge 等）</li>
+                        </ul>
+                    </div>
+                    <div class="run-step">
+                        <h3>2. 克隆仓库</h3>
+                        <pre><code>git clone https://github.com/Reverie-t/powercontext67
+cd powercontext67
+git checkout qoder-research-weekly</code></pre>
+                    </div>
+                    <div class="run-step">
+                        <h3>3. 创建虚拟环境并安装依赖</h3>
+                        <pre><code>cd qoder
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+# 或使用国内镜像
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt</code></pre>
+                    </div>
+                    <div class="run-step">
+                        <h3>4. 启动服务</h3>
+                        <pre><code>python src/server.py</code></pre>
+                        <p>服务将在 <code>http://127.0.0.1:8000</code> 启动</p>
+                    </div>
+                    <div class="run-step">
+                        <h3>5. 访问应用</h3>
+                        <p>打开浏览器访问 <a href="http://127.0.0.1:8000" target="_blank">http://127.0.0.1:8000</a></p>
+                        <p>按照界面提示创建项目、添加记录、生成周报。</p>
+                    </div>
+                    <div class="run-step">
+                        <h3>6. 运行验收测试</h3>
+                        <pre><code># 运行完整验收测试（包括跨周、重启、项目隔离）
+python tests/test_acceptance.py
+
+# 初始化合成样例数据
+python scripts/init_sample_data.py</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="evidence" class="section">
+            <div class="container">
+                <h2>验收证据</h2>
+                <p>下面的截图来自真实本地应用，研究内容为合成样例。完整进程重启与浏览器流程已实际验证；上方的浏览器步骤演示则用于说明操作。</p>
+                <div class="runtime-screenshots">
+                    <figure>
+                        <a href="assets/report-desktop.png" target="_blank" rel="noopener"><img src="assets/report-desktop.png" alt="真实本地应用生成第二周周报，显示本周记录、未完成任务和 PowerContext 来源引用" loading="lazy" width="1440" height="1600"></a>
+                        <figcaption>第二周周报：本周记录与历史待办分开呈现。点击查看完整截图。</figcaption>
+                    </figure>
+                    <figure>
+                        <a href="assets/memory-desktop.png" target="_blank" rel="noopener"><img src="assets/memory-desktop.png" alt="PowerContext 真实记忆列表，显示已完成任务、新版偏好和制品版本号" loading="lazy" width="1440" height="1080"></a>
+                        <figcaption>真实记忆证据：偏好与任务完成后，制品版本由 1 更新为 2。</figcaption>
+                    </figure>
+                </div>
+                <p><a href="assets/process-restart.json" target="_blank" rel="noopener">查看完整进程重启验证（9 项通过）</a> · <a href="assets/browser-acceptance.json" target="_blank" rel="noopener">查看浏览器验证</a> · <a href="https://github.com/Reverie-t/powercontext67/blob/qoder-research-weekly/qoder/docs/VERIFICATION_LOG.md" target="_blank" rel="noopener">运行命令与证据说明</a></p>
+                
+                <div class="evidence-grid">
+                    <div class="evidence-card">
+                        <h3>场景 A：跨周与重启后的记忆复用</h3>
+                        <ul>
+                            <li>✓ 第一周保存偏好和记录</li>
+                            <li>✓ 服务重启后偏好自动读取</li>
+                            <li>✓ 未完成待办进入第二周计划</li>
+                            <li>✓ 不把第一周成果误认为第二周新增</li>
+                        </ul>
+                    </div>
+                    <div class="evidence-card">
+                        <h3>场景 B：项目隔离</h3>
+                        <ul>
+                            <li>✓ 项目 A 和项目 B 使用不同 scope_id</li>
+                            <li>✓ 项目 B 的记忆中不包含项目 A 的记录</li>
+                            <li>✓ 周报和引用严格隔离</li>
+                        </ul>
+                    </div>
+                    <div class="evidence-card">
+                        <h3>场景 C：日期与错误处理</h3>
+                        <ul>
+                            <li>✓ 周报范围只包含范围内记录</li>
+                            <li>✓ 开始日期晚于结束日期时返回验证错误</li>
+                            <li>✓ 无记录时给出空状态，不编造进展</li>
+                        </ul>
+                    </div>
+                    <div class="evidence-card">
+                        <h3>PowerContext 持久化验证</h3>
+                        <ul>
+                            <li>✓ 使用 powercontext==1.4.1 正式版</li>
+                            <li>✓ SQLite 持久化，非内存模拟</li>
+                            <li>✓ 跨客户端、跨进程读取一致</li>
+                            <li>✓ 记忆证据显示 artifact_id 和 revision</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech" class="section bg-alt">
+            <div class="container">
+                <h2>技术架构</h2>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <h3>后端</h3>
+                        <ul>
+                            <li>Python 3.11</li>
+                            <li>FastAPI（HTTP API）</li>
+                            <li>PowerContext 1.4.1（记忆持久化）</li>
+                            <li>SQLite（PowerContext 内置存储）</li>
+                        </ul>
+                    </div>
+                    <div class="tech-item">
+                        <h3>前端</h3>
+                        <ul>
+                            <li>原生 HTML5 + CSS3</li>
+                            <li>原生 JavaScript（无框架）</li>
+                            <li>响应式布局</li>
+                        </ul>
+                    </div>
+                    <div class="tech-item">
+                        <h3>数据存储</h3>
+                        <ul>
+                            <li>PowerContext：项目偏好、研究记录、待办事项</li>
+                            <li>JSON 文件：项目元数据、周报内容</li>
+                            <li>SQLite：PowerContext 底层持久化</li>
+                        </ul>
+                    </div>
+                    <div class="tech-item">
+                        <h3>关键依赖</h3>
+                        <ul>
+                            <li>powercontext[server,client]==1.4.1</li>
+                            <li>fastapi&gt;=0.115.0</li>
+                            <li>uvicorn&gt;=0.32.0</li>
+                            <li>pydantic&gt;=2.10.0</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="repo" class="section">
+            <div class="container">
+                <h2>代码仓库</h2>
+                <div class="repo-info">
+                    <p><strong>仓库地址：</strong><a href="https://github.com/Reverie-t/powercontext67/tree/qoder-research-weekly/qoder" target="_blank" rel="noopener">https://github.com/Reverie-t/powercontext67/tree/qoder-research-weekly/qoder</a></p>
+                    <p><strong>开发分支：</strong><code>qoder-research-weekly</code></p>
+                    <p><strong>项目目录：</strong><code>qoder/</code></p>
+                    <p><strong>基线分支：</strong><code>2026-competition-ecosystem</code></p>
+                </div>
+                
+                <div class="repo-structure">
+                    <h3>项目结构</h3>
+                    <pre><code>qoder/
+├── src/                          # 源代码
+│   ├── server.py                 # FastAPI HTTP 服务器
+│   ├── weekly_assistant.py       # 业务逻辑层
+│   └── powercontext_service.py   # PowerContext 服务封装
+├── static/                       # Web 前端
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── site/                         # 静态展示站点（本页面）
+│   ├── index.html
+│   └── style.css
+├── tests/                        # 验收测试
+│   └── test_acceptance.py
+├── scripts/                      # 工具脚本
+│   └── init_sample_data.py
+├── data/                         # 运行时数据（自动生成）
+├── docs/                         # 文档
+│   ├── PROJECT_BRIEF.md
+│   ├── ACCEPTANCE_PLAN.md
+│   └── QODER_DEVELOPMENT.md
+├── requirements.txt              # Python 依赖
+└── README.md                     # 项目说明</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="limitations" class="section bg-alt">
+            <div class="container">
+                <h2>已知限制与说明</h2>
+                <div class="limitations-list">
+                    <div class="limitation">
+                        <h3>无 LLM 增强</h3>
+                        <p>当前版本使用规则模式生成周报，不调用大语言模型。如需 LLM 增强，可后续集成，但不影响核心功能。</p>
+                    </div>
+                    <div class="limitation">
+                        <h3>单用户本地运行</h3>
+                        <p>设计为个人科研工具，不支持多用户并发或远程访问。数据存储在本地文件系统。</p>
+                    </div>
+                    <div class="limitation">
+                        <h3>PowerContext 服务器生命周期</h3>
+                        <p>PowerContext 服务器随应用启动，应用关闭时服务器停止。数据通过 SQLite 持久化，重启后可恢复。</p>
+                    </div>
+                    <div class="limitation">
+                        <h3>合成样例数据</h3>
+                        <p>演示和测试中使用的研究内容为合成样例，非真实科研数据。实际使用时请替换为真实研究记录。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>科研周报助手 · 2026 OceanBase Qoder 赛道</p>
+            <p>基于 PowerContext 1.4.1 · 由 Qoder CN CLI 开发</p>
+            <p class="footer-links">
+                <a href="https://github.com/Reverie-t/powercontext67/tree/qoder-research-weekly/qoder" target="_blank" rel="noopener">GitHub</a>
+                <span>·</span>
+                <a href="#run">运行指南</a>
+                <span>·</span>
+                <a href="#repo">代码仓库</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="demo.js"></script>
+</body>
+</html>

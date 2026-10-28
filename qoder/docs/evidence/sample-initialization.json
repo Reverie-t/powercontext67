@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "synthetic_data": true,
+  "first_run": {
+    "projects": 2,
+    "records": 7,
+    "reports": 2
+  },
+  "second_run": {
+    "projects": 2,
+    "records": 7,
+    "reports": 2
+  },
+  "cross_week_todo_verified": true
+}

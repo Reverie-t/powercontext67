@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "anonymous_context": true,
+  "url": "https://67d782369a0b46c19ea5eef369627671-0bxo40pomch.qoder.zone/",
+  "http_status": 200,
+  "images": [
+    {
+      "src": "assets/report-desktop.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 1462
+    },
+    {
+      "src": "assets/memory-desktop.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 1072
+    }
+  ],
+  "demo_navigation": "passed",
+  "desktop_and_mobile_overflow": false
+}

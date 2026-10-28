@@ -1,0 +1,17 @@
+{
+  "site_name": "科研周报助手",
+  "site_id": "01a181ed-3c5b-7b78-8194-0db85f46e1bd",
+  "project_id": "01a181ed-3c5a-717b-90f6-1ab63cf71636",
+  "url": "https://67d782369a0b46c19ea5eef369627671-0bxo40pomch.qoder.zone",
+  "publication_state": "publication_completed",
+  "published": true,
+  "access_mode": "public",
+  "lifecycle": "active",
+  "governance_status": "normal",
+  "action_id": "a3f7c2d1-9e4b-4c6a-8d5e-1f2a3b4c5d6e",
+  "publish_operation_id": "01a181ed-af3b-7715-82d7-704fbcddbad9",
+  "verification_operation_id": "01a181ed-3f02-7939-a802-14b3004ec363",
+  "descriptor_path": ".科研周报助手.qoder.site",
+  "published_at": "2026-10-28",
+  "notes": "Static showcase site for the 2026 OceanBase Qoder competition entry. Contains synthetic demo, real screenshots, and local run instructions. No live PowerContext connection."
+}

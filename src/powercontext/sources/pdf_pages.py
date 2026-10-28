@@ -240,8 +240,12 @@ def _queries(question: str) -> tuple[tuple[str, int], ...]:
     return tuple(queries)
 
 
+_DOC_GENERIC = frozenset({"10k", "10q", "8k", "fy", "inc"})
+_COMPANY_ALIASES = {"jnj": "johnson", "amex": "americanexpress"}
+
+
 def _rank_pages(question: str, records: list[Any]) -> list[Any]:
-    unique = _unique_pages(records)
+    unique = _company_pages(question, _unique_pages(records))
     prepared = [_prepare_page(record) for record in unique]
     document_frequency: Counter[str] = Counter()
     for terms, _counts, _compact in prepared:
@@ -255,6 +259,56 @@ def _rank_pages(question: str, records: list[Any]) -> list[Any]:
     ]
     order = sorted(range(len(unique)), key=lambda index: scores[index], reverse=True)
     return [unique[index] for index in order]
+
+
+def _company_pages(question: str, records: list[Any]) -> list[Any]:
+    grouped: dict[str, list[Any]] = {}
+    for record in records:
+        grouped.setdefault(_document_key(record), []).append(record)
+    if len(grouped) < 2:
+        return records
+    cues = _company_cues(question)
+    scores = {document: _company_score(document, cues) for document in grouped}
+    best = max(scores.values())
+    if best <= 0:
+        return records
+    selected: list[Any] = []
+    for document, score in scores.items():
+        if score == best:
+            selected.extend(grouped[document])
+    return selected
+
+
+def _document_key(record: Any) -> str:
+    return _page_text(record).split("\n", 1)[0].casefold()
+
+
+def _company_cues(question: str) -> set[str]:
+    cues = set(analyze_fts_query(question).split())
+    cues.update(_COMPANY_ALIASES[cue] for cue in list(cues) if cue in _COMPANY_ALIASES)
+    return cues
+
+
+def _company_score(document_key: str, cues: set[str]) -> int:
+    return sum(1 for token in _document_tokens(document_key) if any(_cue_matches(cue, token) for cue in cues))
+
+
+def _document_tokens(document_key: str) -> tuple[str, ...]:
+    return tuple(
+        part
+        for part in re.split(r"[^a-z0-9]+", document_key)
+        if part and part not in _DOC_GENERIC and re.fullmatch(r"20\d\d", part) is None and not part.isdigit()
+    )
+
+
+def _cue_matches(cue: str, token: str) -> bool:
+    if cue in _DOC_GENERIC or re.fullmatch(r"20\d\d", cue):
+        return False
+    if len(cue) < 3 and not any(character.isdigit() for character in cue):
+        return False
+    if cue == token:
+        return True
+    return len(cue) >= 4 and len(token) >= 4 and (cue in token or token in cue)
 
 
 def _prepare_page(record: Any) -> tuple[set[str], Counter[str], str]:
@@ -456,8 +510,7 @@ def _wants_cash(surface: set[str]) -> bool:
 
 def _full_cash_flow_statement(compact: str) -> bool:
     return all(
-        phrase in compact
-        for phrase in ("cashflowsfromoperating", "cashflowsfrominvesting", "cashflowsfromfinancing")
+        phrase in compact for phrase in ("cashflowsfromoperating", "cashflowsfrominvesting", "cashflowsfromfinancing")
     )
 
 

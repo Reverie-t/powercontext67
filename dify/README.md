@@ -88,7 +88,7 @@ Dify 工作流里没有直接连 seekdb 的节点——赛题也明确说明这�
 
 > 只要 seekdb 实际承担所声明的数据存储职责，且应用的主要功能可按说明正常体验，即满足 seekdb 的使用要求，无需在工作流中额外增加直接调用 seekdb 的节点。
 
-怎么核对它真的在起作用，见 [§5 技术结合证据](#五技术结合证据怎么核对)。
+怎么核对它真的在起作用，见 [§6 技术结合证据](#六技术结合证据怎么核对)。
 
 ---
 
@@ -396,3 +396,32 @@ curl -s -X POST http://127.0.0.1:8000/v1/memory/search \
 | 自定义插件 | 无（见 §2.1 为什么不用插件） |
 | 配套源码 | `scripts/`（生成、检查、测试、验证） |
 | 现成插件 | 无 |
+
+---
+
+## 附录：DSL 导入失败时的手工搭建
+
+DSL 是标准 `version: 0.3.0` 导出格式，正常情况下导入即可。如果目标 Dify 版本不认这份
+DSL，按下面这张表在「创建空白应用 → Chatflow」里搭一遍：9 个节点、8 条连线。
+
+新建 Chatflow 后先加一个环境变量：**设置 → 环境变量 → 新增** `PC_BASE_URL`，值填
+`http://host.docker.internal:8000`。
+
+| 顺序 | 节点类型 | 标题 | 关键配置 |
+| --- | --- | --- | --- |
+| 1 | 开始 | 开始 | 不加自定义变量，玩家输入走 `sys.query` |
+| 2 | HTTP 请求 | 建档案室 | `POST {{env.PC_BASE_URL}}/v1/scopes`，Body 选 JSON：`{"title":"口供档案","summary":"Dify《口供》应用...","idempotency_key":"dify-confession-{{sys.user_id}}"}`；异常处理选**默认值**，`body` = `{}` |
+| 3 | 代码 | 解析 scope | 语言 Python3，输入 `scope_resp`←节点2的 `body`、`query`←`sys.query`，输出 `scope_id`/`prepare_json`/`boot_err`（代码见 `scripts/build_dsl.py` 的 `CODE_BOOT`） |
+| 4 | HTTP 请求 | 调取档案 | `POST {{env.PC_BASE_URL}}/v1/context/prepare`，Body JSON 直接引用 `{{节点3.prepare_json}}`；异常处理默认值 = `{"status":"empty","content":null,"content_bytes":0}` |
+| 5 | 代码 | 整理档案 | 输入 `prep_resp`←节点4的 `body`、`boot_err`←节点3的 `boot_err`，输出 `context_text`/`memory_state`/`boot_err` |
+| 6 | LLM | 老严开口 | 模型任意对话模型；**记忆 → 开启，窗口 10**；System 提示词里用 `{{节点5.context_text}}` 插入档案（完整提示词见 `build_dsl.py` 的 `SYSTEM_PROMPT`）；User 提示词 `{{sys.query}}` |
+| 7 | 代码 | 拆台词与记录 | 输入 `text`←节点6的 `text`、`query`←`sys.query`、`scope_id`←节点3的 `scope_id`，输出 `reply`/`memo`/`remember_json` |
+| 8 | HTTP 请求 | 归档口供 | `POST {{env.PC_BASE_URL}}/v1/memory/remember`，Body JSON 引用 `{{节点7.remember_json}}`；异常处理默认值 = `{"changed":false,"records":[]}` |
+| 9 | 直接回复 | 回话 | `{{节点7.reply}}` |
+
+连线：1→2→3→4→5→6→7→8→9，全部走默认出口。
+
+三个 HTTP 节点的 **异常处理选「默认值」** 这一步别省：它让 PowerContext 掉线时对话还能继续，
+否则评审看到的就是一个报错。
+
+搭完点「运行」验证一局，然后照 §5.1 走一遍。

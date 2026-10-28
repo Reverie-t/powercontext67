@@ -105,6 +105,8 @@ dify/
 │   ├── start_powercontext.sh         # 用 seekdb 后端启动 PowerContext
 │   ├── verify_roundtrip.py           # 不起 Dify，复现跨会话记忆闭环
 │   └── seekdb_evidence.py            # 收集 seekdb 数据落地证据
+├── docs/
+│   └── run-and-capture.md            # 从零跑到出截图的操作单（含截图清单）
 └── README.md
 ```
 
@@ -113,6 +115,9 @@ dify/
 ---
 
 ## 四、从零跑起来
+
+> 只想尽快跑通并留下证据，直接看 [`docs/run-and-capture.md`](docs/run-and-capture.md)——那份是
+> 照着敲的操作单，含截图清单。下面是完整的说明和取舍。
 
 ### 4.0 环境清单
 
@@ -137,7 +142,11 @@ chmod +x scripts/start_powercontext.sh
 ./scripts/start_powercontext.sh
 ```
 
-脚本做四件事：装 `powercontext[cli,server,seekdb]==1.4.1`、清掉会冲突的 `POWERCONTEXT_SERVER_DATABASE_URL`、把后端切成 seekdb、监听 `0.0.0.0:8000` 关鉴权启动。
+脚本做五件事：装 `powercontext[cli,server,seekdb]==1.4.1`、清掉会冲突的 `POWERCONTEXT_SERVER_DATABASE_URL`、
+把后端切成 seekdb、监听 `0.0.0.0:8000`、关鉴权并显式 opt-in
+`POWERCONTEXT_SERVER_ALLOW_UNAUTHENTICATED_NON_LOOPBACK=true`。
+
+最后那个 opt-in 不能少：PowerContext 默认**拒绝**在非 loopback 地址上无鉴权启动，少了它会直接退出。
 
 > 为什么要监听 `0.0.0.0` 而不是默认的 `127.0.0.1`：Dify 跑在容器里，容器访问宿主机的 loopback 是不通的。**这个配置只适合本机演示**，别把 8000 端口暴露到公网。要鉴权就把 `POWERCONTEXT_SERVER_ACCESS_MODE` 改成 `enforced` 并设 `POWERCONTEXT_SERVER_AUTH_TOKEN`，再给 DSL 里三个 HTTP 节点加 `Authorization: Bearer <token>` 头。
 
@@ -181,30 +190,41 @@ SSRF_PROXY_ALLOW_PRIVATE_IPS=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.0/8
 
 要更收敛的话，只放行宿主机所在网段即可（`docker network inspect` 里的 Subnet，或 `host.docker.internal` 解析出的地址）。
 
-#### ② 让容器能解析宿主机（Linux 需要）
+#### ② 让容器能解析宿主机（Linux / WSL2 需要）
 
 macOS / Windows 的 Docker Desktop 自带 `host.docker.internal`，跳过这步。
 
-Linux 上编辑 `dify/docker/docker-compose.yaml`，给 `api` 和 `worker` 两个服务的 `extra_hosts` 加上：
+Linux 上别去手改官方 `docker-compose.yaml`（缩进容易改错，升级也冲突），加一个 override 文件：
 
-```yaml
+```bash
+cd dify/docker
+cat > docker-compose.override.yaml <<'YAML'
+services:
+  api:
     extra_hosts:
       - "host.docker.internal:host-gateway"
+  worker:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+YAML
+docker compose config | grep -A2 extra_hosts   # 应该能看到两处
 ```
 
 #### ③ 重建并验证
 
 ```bash
 docker compose up -d
-docker compose exec api curl -s -o /dev/null -w '%{http_code}\n' http://host.docker.internal:8000/health/live
+docker compose exec api python -c "import urllib.request;print(urllib.request.urlopen('http://host.docker.internal:8000/health/live',timeout=5).status)"
 ```
 
-返回 `200` 就通了。返回 `000` / `403`，按下面顺序排查：
+> 用 python 而不是 curl：Dify 的 api 镜像是 slim 底包，不一定带 curl。
+
+打印 `200` 就通了。其余按下面排查：
 
 | 现象 | 原因 |
 | --- | --- |
-| `000` | 容器解析不到 `host.docker.internal`，或 PowerContext 没在 `0.0.0.0` 上监听 |
-| `403` | `SSRF_PROXY_ALLOW_PRIVATE_IPS` 没生效，`docker compose up -d` 时没重建 `ssrf_proxy` |
+| `URLError` / `Name or service not known` | 容器解析不到 `host.docker.internal`，`extra_hosts` 没配对；或 PowerContext 没在 `0.0.0.0` 上监听 |
+| `HTTP Error 403` | `SSRF_PROXY_ALLOW_PRIVATE_IPS` 没生效，`docker compose up -d` 时没重建 `ssrf_proxy` |
 | `403` 且上面都配了 | HTTP 节点的请求会带 `HTTP_PROXY` 环境变量；确认 `api` 容器的 `SSRF_PROXY_HTTP_URL` 指向的代理能访问该地址 |
 
 ### 4.3 配置模型
@@ -360,7 +380,8 @@ curl -s -X POST http://127.0.0.1:8000/v1/memory/search \
 | 导入 DSL 报 `version` 或字段错误 | 确认 Dify ≥ 1.17。更早的 1.x 会走 DSL 迁移，一般能导入，但 `environment_variables` 可能需要手动补 `PC_BASE_URL` |
 | `老严开口` 节点显示模型不可用 | 没配模型供应商，或你的账号没有 DeepSeek。换成任意对话模型即可 |
 | 写完记忆下一轮立刻召回不到 | 检索有可见性延迟，等几秒；`verify_roundtrip.py` 里也是同样情况 |
-| Windows 上 `start_powercontext.sh` 直接退出 | 嵌入式 seekdb 没有 Windows wheel，用 WSL2 |
+| `start_powercontext.sh` 一启动就退出，报 `unauthenticated` | 缺 `POWERCONTEXT_SERVER_ALLOW_UNAUTHENTICATED_NON_LOOPBACK=true`，脚本里本该有，检查是不是被改掉了 |
+| Windows 上 `start_powercontext.sh` 直接退出 | 嵌入式 seekdb 没有 Windows wheel，用 WSL2（见 `docs/run-and-capture.md` 第 0 步） |
 | 中文全文检索召回偏低 | PowerContext 最小配置走全文检索，不配 Embedding 时靠关键词匹配。所以记忆正文统一加了 `口供记录：` 前缀，`query` 也加了 `口供 ` 前缀来提升命中率。要更好的召回可以给 PowerContext 配 Embedding（见其 `configure-vector-search` 文档），本作不依赖 |
 
 **降级行为说明**：三个 HTTP 节点都是 `error_strategy: default-value`。PowerContext 挂掉时，建档案室返回 `{}`、调档返回空、归档被忽略，对话本身不会报错——这是刻意设计的，保证"评审至少能玩到对话"，但**记忆功能需要服务在线**。

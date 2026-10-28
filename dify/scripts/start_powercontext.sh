@@ -37,6 +37,9 @@ export POWERCONTEXT_SERVER_HTTP_PORT="${PC_PORT}"
 # 本地演示关掉鉴权；要开的话改成 enforced 并设置 POWERCONTEXT_SERVER_AUTH_TOKEN，
 # 同时给 DSL 里三个 HTTP 节点加 Authorization 头。
 export POWERCONTEXT_SERVER_ACCESS_MODE=disabled
+# 没有这一行，PowerContext 会拒绝在非 loopback 地址上无鉴权启动（直接退出）。
+# 容器里的 Dify 必须能连到宿主，所以只能绑 0.0.0.0；这个 opt-in 就是为这种场景准备的。
+export POWERCONTEXT_SERVER_ALLOW_UNAUTHENTICATED_NON_LOOPBACK=true
 
 echo "==> 数据库后端：seekdb（嵌入式）"
 echo "==> 监听：${PC_HOST}:${PC_PORT}"

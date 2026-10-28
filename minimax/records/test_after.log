@@ -1,0 +1,18 @@
+label: after
+$ /data02/quan24/powercontext/.venv/bin/python -m unittest sample_app.tests.test_filter
+exit_code: 0
+
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK
+
+$ /data02/quan24/powercontext/.venv/bin/python -m unittest sample_app.tests.test_sort
+exit_code: 0
+
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK

@@ -1,0 +1,9 @@
+{
+  "task": "给任务列表增加按状态筛选，原有排序必须保持",
+  "required": [
+    {"path": "sample_app/spec.md", "kind": "spec", "symbol": "S2"},
+    {"path": "sample_app/tasks.py", "kind": "code", "symbol": "filter_tasks"},
+    {"path": "sample_app/tests/test_filter.py", "kind": "test", "symbol": "test_filter_exact_status"},
+    {"path": "sample_app/tests/test_sort.py", "kind": "test", "symbol": "test_sort_priority_then_name"}
+  ]
+}

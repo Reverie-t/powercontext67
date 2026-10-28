@@ -1,0 +1,19 @@
+{
+  "source_id": "task-state-1",
+  "sequence": 1,
+  "scope_id": "scp_3ch8ngtmax90h3skwqpc5pv0ga",
+  "payload": {
+    "task": "给任务列表增加按状态筛选，原有排序必须保持",
+    "done": [
+      "已导入规格、代码和测试"
+    ],
+    "todo": [
+      "实现 filter_tasks"
+    ],
+    "verification": {
+      "filter": "failed",
+      "sort": "passed",
+      "marker": "pc-restart-7f3a"
+    }
+  }
+}

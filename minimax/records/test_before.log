@@ -1,0 +1,60 @@
+$ /data02/quan24/powercontext/.venv/bin/python -m unittest sample_app.tests.test_filter
+exit_code: 1
+
+EEEE
+======================================================================
+ERROR: test_blank_status_returns_all_in_order (sample_app.tests.test_filter.FilterTasksTest.test_blank_status_returns_all_in_order)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/data02/quan24/RYB/minimax/sample_app/tests/test_filter.py", line 22, in test_blank_status_returns_all_in_order
+    self.assertEqual(filter_tasks(tasks, None), tasks)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data02/quan24/RYB/minimax/sample_app/tasks.py", line 19, in filter_tasks
+    raise NotImplementedError("filter_tasks 尚未实现")
+NotImplementedError: filter_tasks 尚未实现
+
+======================================================================
+ERROR: test_filter_does_not_mutate_input (sample_app.tests.test_filter.FilterTasksTest.test_filter_does_not_mutate_input)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/data02/quan24/RYB/minimax/sample_app/tests/test_filter.py", line 34, in test_filter_does_not_mutate_input
+    filter_tasks(tasks, "done")
+  File "/data02/quan24/RYB/minimax/sample_app/tasks.py", line 19, in filter_tasks
+    raise NotImplementedError("filter_tasks 尚未实现")
+NotImplementedError: filter_tasks 尚未实现
+
+======================================================================
+ERROR: test_filter_exact_status (sample_app.tests.test_filter.FilterTasksTest.test_filter_exact_status)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/data02/quan24/RYB/minimax/sample_app/tests/test_filter.py", line 14, in test_filter_exact_status
+    result = filter_tasks(tasks, "open")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data02/quan24/RYB/minimax/sample_app/tasks.py", line 19, in filter_tasks
+    raise NotImplementedError("filter_tasks 尚未实现")
+NotImplementedError: filter_tasks 尚未实现
+
+======================================================================
+ERROR: test_unknown_status_returns_empty (sample_app.tests.test_filter.FilterTasksTest.test_unknown_status_returns_empty)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/data02/quan24/RYB/minimax/sample_app/tests/test_filter.py", line 27, in test_unknown_status_returns_empty
+    self.assertEqual(filter_tasks(tasks, "archived"), [])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data02/quan24/RYB/minimax/sample_app/tasks.py", line 19, in filter_tasks
+    raise NotImplementedError("filter_tasks 尚未实现")
+NotImplementedError: filter_tasks 尚未实现
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+FAILED (errors=4)
+
+$ /data02/quan24/powercontext/.venv/bin/python -m unittest sample_app.tests.test_sort
+exit_code: 0
+
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK

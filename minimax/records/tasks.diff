@@ -1,0 +1,23 @@
+--- snapshots/before/tasks.py
++++ sample_app/tasks.py
+@@ -1,7 +1,6 @@
+ """任务列表。
+ 
+-排序已经按规格实现。按状态筛选还没有实现，功能测试会因此失败。
+-规格见 sample_app/spec.md。
++排序和状态筛选行为见 sample_app/spec.md。
+ """
+ 
+ from __future__ import annotations
+@@ -14,6 +13,9 @@
+ 
+ 
+ def filter_tasks(tasks: list[dict], status: str | None) -> list[dict]:
+-    """按状态留下任务。规格要求的行为还没写。"""
++    """按状态精确筛选任务，保持原顺序且不修改传入的列表。"""
+ 
+-    raise NotImplementedError("filter_tasks 尚未实现")
++    if status is None or status == "":
++        return list(tasks)
++
++    return [task for task in tasks if task.get("status") == status]

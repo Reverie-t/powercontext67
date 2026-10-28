@@ -1,0 +1,124 @@
+任务: 给任务列表增加按状态筛选，原有排序必须保持
+
+下面的规格、代码和测试来自 seekdb 查询结果。
+
+## spec
+来源: sample_app/spec.md
+符号: S2
+# 任务列表规格
+
+## S1 排序必须保持
+
+`sort_tasks` 按 `priority` 从高到低排列。`priority` 相同的时候按 `name` 升序。函数返回新列表，不修改传入的列表。这项行为已经存在，后续修改不能把它改掉。
+
+## S2 按状态筛选
+
+`filter_tasks(tasks, status)` 只留下 `status` 字段与参数完全相同的任务，并保持传入列表里的相对顺序。
+
+`status` 是 `None` 或空字符串时，返回全部任务，顺序不变。没有命中的状态返回空列表，不抛异常。函数返回新列表，不修改传入的列表。
+
+状态比较记号：SPEC_TOKEN_BETA
+
+## code
+来源: sample_app/tasks.py
+符号: filter_tasks
+"""任务列表。
+
+排序已经按规格实现。按状态筛选还没有实现，功能测试会因此失败。
+规格见 sample_app/spec.md。
+"""
+
+from __future__ import annotations
+
+
+def sort_tasks(tasks: list[dict]) -> list[dict]:
+    """按 priority 从高到低，相同 priority 再按 name 升序。不改原列表。"""
+
+    return sorted(tasks, key=lambda item: (-item["priority"], item["name"]))
+
+
+def filter_tasks(tasks: list[dict], status: str | None) -> list[dict]:
+    """按状态留下任务。规格要求的行为还没写。"""
+
+    raise NotImplementedError("filter_tasks 尚未实现")
+
+## test
+来源: sample_app/tests/test_filter.py
+符号: test_filter_exact_status
+"""功能测试：按状态筛选。修改前因为函数还没实现而失败。"""
+
+import unittest
+
+from sample_app.tasks import filter_tasks
+
+
+class FilterTasksTest(unittest.TestCase):
+    def test_filter_exact_status(self) -> None:
+        tasks = [
+            {"name": "a", "priority": 2, "status": "open"},
+            {"name": "b", "priority": 1, "status": "done"},
+        ]
+        result = filter_tasks(tasks, "open")
+        self.assertEqual([item["name"] for item in result], ["a"])
+
+    def test_blank_status_returns_all_in_order(self) -> None:
+        tasks = [
+            {"name": "a", "priority": 2, "status": "open"},
+            {"name": "b", "priority": 1, "status": "done"},
+        ]
+        self.assertEqual(filter_tasks(tasks, None), tasks)
+        self.assertEqual(filter_tasks(tasks, ""), tasks)
+
+    def test_unknown_status_returns_empty(self) -> None:
+        tasks = [{"name": "a", "priority": 1, "status": "open"}]
+        self.assertEqual(filter_tasks(tasks, "archived"), [])
+
+    def test_filter_does_not_mutate_input(self) -> None:
+        tasks = [
+            {"name": "a", "priority": 1, "status": "open"},
+            {"name": "b", "priority": 1, "status": "done"},
+        ]
+        filter_tasks(tasks, "done")
+        self.assertEqual([item["status"] for item in tasks], ["open", "done"])
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+## test
+来源: sample_app/tests/test_sort.py
+符号: test_sort_priority_then_name
+"""回归测试：排序行为必须保持。"""
+
+import unittest
+
+from sample_app.tasks import sort_tasks
+
+
+class SortTasksTest(unittest.TestCase):
+    def test_sort_priority_then_name(self) -> None:
+        tasks = [
+            {"name": "b", "priority": 1, "status": "open"},
+            {"name": "a", "priority": 2, "status": "done"},
+            {"name": "c", "priority": 1, "status": "open"},
+        ]
+        result = sort_tasks(tasks)
+        self.assertEqual([item["name"] for item in result], ["a", "b", "c"])
+
+    def test_sort_does_not_mutate_input(self) -> None:
+        tasks = [
+            {"name": "b", "priority": 1, "status": "open"},
+            {"name": "a", "priority": 2, "status": "done"},
+        ]
+        sort_tasks(tasks)
+        self.assertEqual([item["name"] for item in tasks], ["b", "a"])
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+## 任务状态
+来源: powercontext:task-state-1
+已完成: 已导入规格、代码和测试
+待办: 实现 filter_tasks
+验证结果: filter=failed, marker=pc-restart-7f3a, sort=passed

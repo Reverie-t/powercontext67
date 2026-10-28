@@ -1,0 +1,36 @@
+{
+  "task": "给任务列表增加按状态筛选，原有排序必须保持",
+  "path_sql": "SELECT material_id, kind, path, symbol, body FROM engineering_material WHERE path IN ('sample_app/spec.md', 'sample_app/tasks.py', 'sample_app/tests/test_filter.py', 'sample_app/tests/test_sort.py')",
+  "match_sql": "SELECT material_id, kind, path, symbol, body FROM engineering_material WHERE MATCH(body, path, symbol) AGAINST('给任务列表增加按状态筛选原有排序必须保持' IN NATURAL LANGUAGE MODE)",
+  "match_error": "",
+  "rows": [
+    {
+      "material_id": "m1",
+      "kind": "spec",
+      "path": "sample_app/spec.md",
+      "symbol": "S2",
+      "body": "# 任务列表规格\n\n## S1 排序必须保持\n\n`sort_tasks` 按 `priority` 从高到低排列。`priority` 相同的时候按 `name` 升序。函数返回新列表，不修改传入的列表。这项行为已经存在，后续修改不能把它改掉。\n\n## S2 按状态筛选\n\n`filter_tasks(tasks, status)` 只留下 `status` 字段与参数完全相同的任务，并保持传入列表里的相对顺序。\n\n`status` 是 `None` 或空字符串时，返回全部任务，顺序不变。没有命中的状态返回空列表，不抛异常。函数返回新列表，不修改传入的列表。\n\n状态比较记号：SPEC_TOKEN_BETA\n"
+    },
+    {
+      "material_id": "m2",
+      "kind": "code",
+      "path": "sample_app/tasks.py",
+      "symbol": "filter_tasks",
+      "body": "\"\"\"任务列表。\n\n排序已经按规格实现。按状态筛选还没有实现，功能测试会因此失败。\n规格见 sample_app/spec.md。\n\"\"\"\n\nfrom __future__ import annotations\n\n\ndef sort_tasks(tasks: list[dict]) -> list[dict]:\n    \"\"\"按 priority 从高到低，相同 priority 再按 name 升序。不改原列表。\"\"\"\n\n    return sorted(tasks, key=lambda item: (-item[\"priority\"], item[\"name\"]))\n\n\ndef filter_tasks(tasks: list[dict], status: str | None) -> list[dict]:\n    \"\"\"按状态留下任务。规格要求的行为还没写。\"\"\"\n\n    raise NotImplementedError(\"filter_tasks 尚未实现\")\n"
+    },
+    {
+      "material_id": "m3",
+      "kind": "test",
+      "path": "sample_app/tests/test_filter.py",
+      "symbol": "test_filter_exact_status",
+      "body": "\"\"\"功能测试：按状态筛选。修改前因为函数还没实现而失败。\"\"\"\n\nimport unittest\n\nfrom sample_app.tasks import filter_tasks\n\n\nclass FilterTasksTest(unittest.TestCase):\n    def test_filter_exact_status(self) -> None:\n        tasks = [\n            {\"name\": \"a\", \"priority\": 2, \"status\": \"open\"},\n            {\"name\": \"b\", \"priority\": 1, \"status\": \"done\"},\n        ]\n        result = filter_tasks(tasks, \"open\")\n        self.assertEqual([item[\"name\"] for item in result], [\"a\"])\n\n    def test_blank_status_returns_all_in_order(self) -> None:\n        tasks = [\n            {\"name\": \"a\", \"priority\": 2, \"status\": \"open\"},\n            {\"name\": \"b\", \"priority\": 1, \"status\": \"done\"},\n        ]\n        self.assertEqual(filter_tasks(tasks, None), tasks)\n        self.assertEqual(filter_tasks(tasks, \"\"), tasks)\n\n    def test_unknown_status_returns_empty(self) -> None:\n        tasks = [{\"name\": \"a\", \"priority\": 1, \"status\": \"open\"}]\n        self.assertEqual(filter_tasks(tasks, \"archived\"), [])\n\n    def test_filter_does_not_mutate_input(self) -> None:\n        tasks = [\n            {\"name\": \"a\", \"priority\": 1, \"status\": \"open\"},\n            {\"name\": \"b\", \"priority\": 1, \"status\": \"done\"},\n        ]\n        filter_tasks(tasks, \"done\")\n        self.assertEqual([item[\"status\"] for item in tasks], [\"open\", \"done\"])\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"
+    },
+    {
+      "material_id": "m4",
+      "kind": "test",
+      "path": "sample_app/tests/test_sort.py",
+      "symbol": "test_sort_priority_then_name",
+      "body": "\"\"\"回归测试：排序行为必须保持。\"\"\"\n\nimport unittest\n\nfrom sample_app.tasks import sort_tasks\n\n\nclass SortTasksTest(unittest.TestCase):\n    def test_sort_priority_then_name(self) -> None:\n        tasks = [\n            {\"name\": \"b\", \"priority\": 1, \"status\": \"open\"},\n            {\"name\": \"a\", \"priority\": 2, \"status\": \"done\"},\n            {\"name\": \"c\", \"priority\": 1, \"status\": \"open\"},\n        ]\n        result = sort_tasks(tasks)\n        self.assertEqual([item[\"name\"] for item in result], [\"a\", \"b\", \"c\"])\n\n    def test_sort_does_not_mutate_input(self) -> None:\n        tasks = [\n            {\"name\": \"b\", \"priority\": 1, \"status\": \"open\"},\n            {\"name\": \"a\", \"priority\": 2, \"status\": \"done\"},\n        ]\n        sort_tasks(tasks)\n        self.assertEqual([item[\"name\"] for item in tasks], [\"b\", \"a\"])\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"
+    }
+  ]
+}

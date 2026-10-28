@@ -44,7 +44,7 @@ def main() -> int:
     )
     checks.append(("建 scope 后能取到 scope_id", boot["scope_id"] == "scope_abc", boot["scope_id"]))
     prepare_body = json.loads(boot["prepare_json"])
-    checks.append(("prepare 的 query 带口供前缀", prepare_body["query"].startswith("口供 "), prepare_body["query"]))
+    checks.append(("prepare 的 query 带口供前缀", prepare_body["query"].startswith("口供记录 "), prepare_body["query"]))
     checks.append(("带引号的输入不会破坏 JSON", prepare_body["query"].endswith('"我讨厌金鱼"'), prepare_body["query"]))
 
     # 2. PowerContext 没启动时的降级

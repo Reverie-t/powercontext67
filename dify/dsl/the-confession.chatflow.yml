@@ -259,7 +259,9 @@ workflow:
 
               body = {
                   "scope_id": scope_id,
-                  "query": "口供 " + (query or "").strip(),
+                  # 前缀必须是完整的「口供记录」：全文检索把四个字当一个词，只写「口供」匹配不上，
+                  # 跨会话就会一条都召不回。
+                  "query": "口供记录 " + (query or "").strip(),
                   "max_bytes": 3000,
               }
               return {

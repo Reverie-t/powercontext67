@@ -116,8 +116,11 @@ def main() -> int:
     hits = (found or {}).get("hits") or []
     print(f"   /v1/memory/search 命中 {len(hits)} 条（这个数字来自 seekdb 里的记忆索引）：")
     for hit in hits:
-        text = ((hit.get("content") or {}).get("text") or "").strip().replace("\n", " ")
-        print(f"     · {text[:90]}")
+        mem = hit.get("memory") or {}
+        text = (mem.get("text") or "").strip().replace("\n", " ")
+        score = hit.get("score")
+        score_text = f"[{score:.3f}] " if isinstance(score, (int, float)) else ""
+        print(f"     · {score_text}{text[:90]}")
     if not hits:
         print("     （空。先跑一局，或跑 scripts/verify_roundtrip.py）")
     return 0

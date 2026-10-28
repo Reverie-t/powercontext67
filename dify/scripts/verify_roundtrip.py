@@ -121,7 +121,7 @@ def main() -> int:
     for rec in records:
         art = rec.get("artifact") or {}
         print(f"  · {art.get('family')}/{art.get('artifact_id')}@rev{art.get('revision')}")
-        text = ((rec.get("content") or {}).get("text") or "").strip()
+        text = (rec.get("text") or "").strip()
         print(f"    正文：{text}")
 
     # ---- 会话 B -------------------------------------------------------

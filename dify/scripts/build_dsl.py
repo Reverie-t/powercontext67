@@ -121,10 +121,59 @@ def main(scope_resp, query):
 '''
 
 CODE_CTX = '''import json
+import re
+
+_BEGIN = "BEGIN_POWERCONTEXT_PREPARED_CONTEXT_V1"
+_END = "END_POWERCONTEXT_PREPARED_CONTEXT_V1"
+
+
+def _unwrap(raw):
+    """prepare 返回的不是纯文本：一段英文前言 + BEGIN/END 包着的 JSON。
+
+    不拆开的话，英文前言和 citation 会原样进提示词，既浪费 token 也破坏角色。这里只取
+    items 里的正文，拼成老大爷能直接念的清单。
+    """
+    if not raw:
+        return ""
+
+    payload = None
+    start = raw.find(_BEGIN)
+    stop = raw.find(_END)
+    if start >= 0 and stop > start:
+        chunk = raw[start + len(_BEGIN):stop].strip()
+        try:
+            payload = json.loads(chunk)
+        except Exception:
+            payload = None
+
+    if payload is None:
+        try:
+            candidate = json.loads(raw)
+        except Exception:
+            return raw.strip()
+        if isinstance(candidate, dict):
+            payload = candidate
+
+    if not isinstance(payload, dict):
+        return raw.strip()
+
+    items = payload.get("items") or []
+    lines = []
+    for item in items:
+        if isinstance(item, str):
+            content = item
+        elif isinstance(item, dict):
+            content = item.get("content") or ""
+        else:
+            continue
+        content = str(content).strip()
+        if content:
+            lines.append("- " + content)
+    return "\\n".join(lines)
 
 
 def main(prep_resp, boot_err):
-    """从 PreparedContext 里取出 content，空值给一句占位，避免把 null 塞进提示词。"""
+    """把 PreparedContext 收成一段干净的中文档案。"""
     text = ""
     status = "unknown"
     try:
@@ -134,7 +183,7 @@ def main(prep_resp, boot_err):
     except Exception:
         status = "parse_error"
 
-    text = text.strip()
+    text = _unwrap(text).strip()
     if len(text) > 4000:
         text = text[:4000] + "……"
 

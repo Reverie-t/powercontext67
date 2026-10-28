@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 from collections import Counter
 from io import BytesIO
 from typing import Any, NoReturn
@@ -36,31 +37,46 @@ from powercontext.sources.projections import TEXT_EVIDENCE_PROJECTION_KEY, TextE
 PDF_PAGE_SOURCE_NAME = "pdf-page"
 _CANDIDATE_LIMIT = 80
 _ANCHOR_LIMIT = 20
-_INCOME_WEIGHT = 2.6
-_CASH_WEIGHT = 1.2
-_LEGAL_WEIGHT = 2.0
-_GEO_WEIGHT = 1.8
-_INCOME_TERMS = frozenset({"revenue", "revenues", "sales", "operating", "income", "profit", "earnings", "expenses"})
-_CASH_TERMS = frozenset({"depreciation", "amortization", "expenditures", "cash", "flows", "purchases"})
-_LEGAL_TERMS = frozenset({"proceedings", "litigation", "legal"})
-_GEO_TERMS = frozenset({"segments", "countries", "america", "europe", "latin", "asia", "africa", "operations"})
-_FINANCIAL_CUES = frozenset({"ebitda", "capex", "margin"})
-_LEGAL_CUES = frozenset({"legal", "lawsuit", "lawsuits", "battles", "battle"})
-_GEO_CUES = frozenset({"geographies", "geography", "geographic"})
-_QUERY_EXPANSIONS = {
-    "geographies": ("segments", "countries", "america", "europe", "latin", "operations"),
-    "geography": ("segments", "countries", "america", "europe", "latin", "operations"),
-    "geographic": ("segments", "countries", "america", "europe", "latin", "operations"),
-    "operates": ("operations", "segments"),
-    "battles": ("proceedings", "litigation"),
-    "battle": ("proceedings", "litigation"),
-    "lawsuit": ("proceedings", "litigation"),
-    "lawsuits": ("proceedings", "litigation"),
-    "legal": ("proceedings", "litigation"),
-    "ebitda": ("depreciation", "amortization"),
-    "capex": ("expenditures", "purchases"),
-    "margin": ("revenue", "sales", "profit"),
+_STATEMENT_BONUS = 12.0
+_BALANCE_BONUS = 9.0
+_CASH_BONUS = 9.0
+_SPLIT_LETTER = re.compile(r"(?<=[a-z]{2})\s+(?=[a-z](?:\s|[^a-z]|$))")
+_WHITESPACE = re.compile(r"\s+")
+_INCOME_HEADINGS = (
+    "statementsofincome",
+    "statementofincome",
+    "statementsofoperations",
+    "statementofoperations",
+    "statementsofearnings",
+    "statementofearnings",
+)
+_TOKEN_ALIASES = {
+    "cashflow": ("cash", "flow"),
+    "cyclicality": ("cyclical",),
+    "ppne": ("property", "plant", "equipment"),
+    "ppe": ("property", "plant", "equipment"),
+    "dpo": ("payable",),
+    "cogs": ("cost", "sales"),
 }
+_GEO_TERMS = (
+    "geographic",
+    "geography",
+    "geographies",
+    "regions",
+    "international",
+    "emea",
+    "apac",
+    "countries",
+    "segments",
+    "america",
+    "europe",
+    "latin",
+    "operations",
+    "lacc",
+    "united",
+)
+_LEGAL_TERMS = ("proceedings", "litigation", "contingencies", "lawsuits", "claims", "proceeding")
+_LEGAL_CUES = frozenset({"legal", "lawsuit", "lawsuits", "battle", "battles", "litigation"})
 
 
 class PDFDocumentInput(BaseModel):
@@ -226,15 +242,25 @@ def _queries(question: str) -> tuple[tuple[str, int], ...]:
 
 def _rank_pages(question: str, records: list[Any]) -> list[Any]:
     unique = _unique_pages(records)
-    term_sets = [set(analyze_text(_page_text(record)).split()) for record in unique]
+    prepared = [_prepare_page(record) for record in unique]
     document_frequency: Counter[str] = Counter()
-    for terms in term_sets:
+    for terms, _counts, _compact in prepared:
         document_frequency.update(terms)
-    cues = set(_question_terms(question))
-    anchors = _expanded_terms(cues)
-    scores = [_page_score(terms, anchors, cues, document_frequency, len(term_sets)) for terms in term_sets]
+    surface = set(_surface_terms(question))
+    anchors = _anchor_terms(surface)
+    page_count = len(prepared)
+    scores = [
+        _page_score(terms, counts, compact, anchors, surface, document_frequency, page_count)
+        for terms, counts, compact in prepared
+    ]
     order = sorted(range(len(unique)), key=lambda index: scores[index], reverse=True)
     return [unique[index] for index in order]
+
+
+def _prepare_page(record: Any) -> tuple[set[str], Counter[str], str]:
+    repaired = _repair_splits(_page_text(record).casefold())
+    tokens = [_stem(token) for token in analyze_text(repaired).split()]
+    return set(tokens), Counter(tokens), _WHITESPACE.sub("", repaired)
 
 
 def _page_text(record: Any) -> str:
@@ -260,29 +286,172 @@ def _question_terms(question: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(analyze_fts_query(question).split()))
 
 
-def _expanded_terms(terms: set[str]) -> tuple[str, ...]:
-    expanded: list[str] = []
-    for term in terms:
-        expanded.append(term)
-        expanded.extend(_QUERY_EXPANSIONS.get(term, ()))
-    return tuple(dict.fromkeys(expanded))
+def _surface_terms(question: str) -> tuple[str, ...]:
+    terms: list[str] = []
+    for token in _question_terms(question):
+        terms.extend(_token_aliases(token))
+    if "p&l" in question.casefold():
+        terms.extend(("income", "operations"))
+    return tuple(dict.fromkeys(terms))
+
+
+def _token_aliases(token: str) -> tuple[str, ...]:
+    short_year = re.fullmatch(r"fy(\d{2})", token)
+    if short_year is not None:
+        return (token, f"20{short_year.group(1)}")
+    full_year = re.fullmatch(r"fy(\d{4})", token)
+    if full_year is not None:
+        return (token, full_year.group(1))
+    return (token, *_TOKEN_ALIASES.get(token, ()))
+
+
+def _anchor_terms(surface: set[str]) -> set[str]:
+    anchors = {_stem(token) for token in surface}
+    anchors.update(_stem(token) for token in _extra_terms(surface))
+    return anchors
+
+
+def _extra_terms(surface: set[str]) -> tuple[str, ...]:
+    return _financial_terms(surface) + _topic_terms(surface)
+
+
+def _financial_terms(surface: set[str]) -> tuple[str, ...]:
+    extra: list[str] = []
+    if "ebitda" in surface:
+        extra.extend(("depreciation", "amortization", "operating"))
+    if "capex" in surface or "expenditure" in surface:
+        extra.extend(("expenditures", "expenditure", "purchases", "property"))
+    if "quick" in surface or "liquidity" in surface:
+        extra.extend(("assets", "liabilities", "inventory", "receivable", "equivalents", "current"))
+    if "gross" in surface or "margin" in surface:
+        extra.extend(("profit", "sales", "revenue", "cost", "operating"))
+    if "restructuring" in surface:
+        extra.extend(("restructuring", "reorganization", "severance"))
+    if {"tax", "rate"} <= surface:
+        extra.extend(("tax", "effective", "income"))
+    if "debt" in surface:
+        extra.extend(("debt", "borrowing", "notes"))
+    return tuple(extra)
+
+
+def _topic_terms(surface: set[str]) -> tuple[str, ...]:
+    extra: list[str] = []
+    if any(token.startswith("geograph") for token in surface):
+        extra.extend(_GEO_TERMS)
+    if surface & _LEGAL_CUES:
+        extra.extend(_LEGAL_TERMS)
+    if surface & {"acquisition", "acquisitions", "acquired"}:
+        extra.extend(("acquisition", "acquired"))
+    if surface & {"customer", "customers", "concentration"}:
+        extra.extend(("customer", "concentration"))
+    if surface & {"product", "service", "products", "services"}:
+        extra.extend(("product", "service"))
+    if "dividend" in surface:
+        extra.append("dividend")
+    if "segment" in surface:
+        extra.append("segment")
+    if "inventory" in surface:
+        extra.append("inventory")
+    if surface & {"retiree", "retirees"}:
+        extra.extend(("retiree", "postretirement", "pension"))
+    return tuple(extra)
 
 
 def _page_score(
     terms: set[str],
-    anchors: tuple[str, ...],
-    cues: set[str],
+    counts: Counter[str],
+    compact: str,
+    anchors: set[str],
+    surface: set[str],
     document_frequency: Counter[str],
     page_count: int,
 ) -> float:
-    score = sum(math.log((page_count + 1) / (document_frequency[anchor] + 1)) for anchor in anchors if anchor in terms)
-    if cues & _FINANCIAL_CUES:
-        score += _INCOME_WEIGHT * len(_INCOME_TERMS & terms) + _CASH_WEIGHT * len(_CASH_TERMS & terms)
-    if cues & _LEGAL_CUES:
-        score += _LEGAL_WEIGHT * len(_LEGAL_TERMS & terms)
-    if cues & _GEO_CUES:
-        score += _GEO_WEIGHT * len(_GEO_TERMS & terms)
-    return score
+    lexical = sum(
+        math.log((page_count + 1) / (document_frequency[anchor] + 1)) for anchor in anchors if anchor in terms
+    )
+    return lexical + _statement_bonus(compact, surface) + _topic_bonus(compact, surface, counts)
+
+
+def _statement_bonus(compact: str, surface: set[str]) -> float:
+    bonus = 0.0
+    if _wants_balance(surface) and "balancesheet" in compact:
+        bonus += _BALANCE_BONUS
+    if _wants_balance(surface) and "currentassets" in compact:
+        bonus += 4
+    if _wants_income(surface) and any(heading in compact for heading in _INCOME_HEADINGS):
+        bonus += _STATEMENT_BONUS
+    if _wants_cash(surface) and ("statementofcashflow" in compact or "cashflowsfromoperating" in compact):
+        bonus += _CASH_BONUS
+    return bonus
+
+
+def _topic_bonus(compact: str, surface: set[str], counts: Counter[str]) -> float:
+    bonus = 0.0
+    if any(token.startswith("geograph") for token in surface) and ("geographic" in compact or "geographies" in compact):
+        bonus += 6
+    if surface & _LEGAL_CUES:
+        bonus += 8 if "legalproceeding" in compact else 3 if "litigation" in compact else 0
+    if _wants_segment(surface) and "businesssegment" in compact:
+        bonus += 7
+    if "cyclicality" in surface and "cyclical" in compact:
+        bonus += 6
+    if surface & {"customer", "customers"}:
+        bonus += 3.2 * math.log1p(counts.get("customer", 0))
+    if surface & {"retiree", "retirees"} and ("retiree" in compact or "postretirement" in compact):
+        bonus += 7
+    if "gross" in surface and "margin" in surface and "costofproductssold" in compact and "percenttosales" in compact:
+        bonus += 8
+    if surface & {"acquired", "acquisition", "acquisitions"}:
+        bonus += 2.4 * math.log1p(counts.get("acquired", 0) + counts.get("acquisition", 0))
+    return bonus
+
+
+def _wants_balance(surface: set[str]) -> bool:
+    if surface & {"quick", "liquidity", "liability", "liabilities", "roa", "ppne", "ppe", "payable", "dpo"}:
+        return True
+    if {"balance", "sheet"} <= surface or {"financial", "position"} <= surface:
+        return True
+    return "inventory" in surface and bool(surface & {"turnover", "sold"})
+
+
+def _wants_income(surface: set[str]) -> bool:
+    if surface & {"margin", "ebitda", "restructuring", "gross", "payable", "cogs"}:
+        return True
+    if {"tax", "rate"} <= surface or {"income", "statement"} <= surface or {"net", "income"} <= surface:
+        return True
+    if "revenue" in surface and surface & {"change", "growth", "drove"}:
+        return True
+    if "inventory" in surface and surface & {"turnover", "sold"}:
+        return True
+    return {"balance", "sheet", "statement"} <= surface
+
+
+def _wants_cash(surface: set[str]) -> bool:
+    if surface & {"capex", "ebitda", "cashflow"}:
+        return True
+    if "cash" in surface and surface & {"flow", "flows"}:
+        return True
+    if {"investing", "financing"} <= surface:
+        return True
+    return "capital" in surface and "expenditure" in surface
+
+
+def _wants_segment(surface: set[str]) -> bool:
+    return "segment" in surface or ("product" in surface and "categories" in surface)
+
+
+def _stem(token: str) -> str:
+    if token.endswith("ies") and len(token) > 4:
+        return f"{token[:-3]}y"
+    if token.endswith("es") and len(token) > 4:
+        return token[:-2]
+    if token.endswith("s") and not token.endswith("ss") and len(token) > 4:
+        return token[:-1]
+    return token
+
+
+def _repair_splits(text: str) -> str:
+    return _SPLIT_LETTER.sub("", text)
 
 
 class _SearchPage:

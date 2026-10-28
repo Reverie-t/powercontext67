@@ -1,0 +1,6 @@
+# 脚本和 DSL 一律用 LF：Windows 上 core.autocrlf=true 会把工作区转成 CRLF，
+# 而 CRLF 的 .sh 在 Linux 上会直接 bad interpreter。
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.md text eol=lf

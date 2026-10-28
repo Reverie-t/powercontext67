@@ -251,6 +251,30 @@ Dify 控制台 → **工作室 → 创建空白应用 → 导入 DSL 文件** �
 
 ---
 
+### 4.6 备选：Dify 云版 + 公网隧道（没有 Docker 权限时）
+
+如果手边只有一台不能装 Docker 的机器（比如只给了普通账号的实验室服务器），可以这样跑：
+
+1. PowerContext 照 §4.1 起在那台机器上，监听 `0.0.0.0:8000`；
+2. 用 Cloudflare 隧道把它变成一个公网 HTTPS 地址（单二进制，不需要 root）：
+
+```bash
+curl -sL -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+chmod +x cloudflared
+nohup ./cloudflared tunnel --url http://localhost:8000 > ~/tunnel.log 2>&1 &
+grep -o "https://[a-z0-9-]*\.trycloudflare\.com" ~/tunnel.log | head -1
+```
+
+3. 打开 [cloud.dify.ai](https://cloud.dify.ai) 注册，导入 DSL，把 `PC_BASE_URL` 填成隧道地址；
+4. 云版没有 DeepSeek，用自带的 `gpt-6-luna` 即可——**但它不支持 `temperature`**，节点里要把这个
+   参数删掉，否则报"temperature 无效"。
+
+注意事项：
+
+- `trycloudflare.com` 是临时域名，cloudflared 一重启就变；演示期间别重启，跑通先截图。
+- 隧道是**无鉴权直通**，拿到地址的人都能读写档案。演示完记得 `pkill -f cloudflared`。
+- 云版发消息要克制，试用模型有月度额度。
+
 ## 五、验证样例
 
 ### 5.1 一局完整对话（预计 3 分钟）
@@ -327,6 +351,63 @@ python scripts/test_flow.py     # 14 条边界用例（含服务挂掉、模型�
 
 ---
 
+### 5.5 实机验证记录（2026-10-28）
+
+这一节是真跑出来的，不是设计稿。
+
+**环境**：Dify 云版（`gpt-6-luna`）+ 一台 Ubuntu 22.04 服务器上的 PowerContext 1.4.1
+（seekdb 后端）+ Cloudflare 隧道。Dify 在公网，PowerContext 在内网，中间靠隧道打通。
+
+**对话实录**：
+
+| 轮次 | 玩家 | 老严 |
+| --- | --- | --- |
+| 1 | 你好 | 你好。档案室是空的。昨晚八点以后，你记得什么？ |
+| 2 | 交代：我确实讨厌那条金鱼，它老盯着我看。 | 讨厌一条鱼，不算交代完整，但算个头。你说它"老盯着我看"，昨晚八点后你去过老坎火锅门口吗？ |
+| 3 | 我什么都不知道，我要走了。 | 刚才你说那条鱼老盯着你，现在又说什么都不知道。**鱼不会作证，但你前后两句话会。** |
+
+第 3 轮那句"鱼不会作证，但你前后两句话会"，就是这个作品想要的调子。
+
+**跨会话验证**（关掉预览，重新开一个会话）：
+
+| 轮次 | 玩家 | 老严 |
+| --- | --- | --- |
+| 4 | 我真没干。 | **档案里你说过："我真没干。"现在还是这句，前后倒是整齐，细节呢？**昨晚八点后你去了哪儿？ |
+| 5 | 我根本不认识那条鱼。 | **档案里你说过："我确实讨厌那条金鱼，它老盯着我看。"**现在又说根本不认识它，陌生鱼倒挺会盯人。你怎么解释？ |
+
+第 4、5 轮是核心证据：**新会话里模型的对话历史是空的**，他不可能"记得"上一轮说过什么，
+唯一来源就是 PowerContext 检索出来的档案。
+
+**服务端日志**（`~/pc-server.log`，时为 UTC）：
+
+```
+13:12:02  create_scope      201
+13:12:03  prepare_context   200
+13:12:09  remember_memory   200
+13:14:10  remember_memory   200
+13:14:29  remember_memory   200
+```
+
+**跑完后库里的档案**（`POST /v1/memory/search`，query=`口供记录`，共 6 条）：
+
+```
+1. 口供记录：嫌疑人说："你好。"
+2. 口供记录：嫌疑人称："我真没干。"
+3. 口供记录：嫌疑人称："我真没干。"
+4. 口供记录：嫌疑人称："我根本不认识那条鱼。"
+5. 口供记录：嫌疑人称"我什么都不知道"，并表示"我要走了"。
+6. 口供记录：嫌疑人称："我确实讨厌那条金鱼，它老盯着我看。"
+```
+
+每一条都带独立的 `artifact_id` 和 `revision`，可以在 Dashboard 里逐条查看。
+
+**这次实测暴露并修掉的三个问题**（都已进代码）：
+
+1. `prepare` 返回的是英文前言 + JSON 包装，直接塞进提示词会让老严看见 "untrusted historical context"；
+2. 检索前缀只写了「口供」，而全文检索把「口供记录」当一个整体词，导致**跨会话一条都召不回**——
+   这个问题最隐蔽，因为同一会话里 LLM 自带 10 轮上下文，看起来"会翻旧账"，其实是假象；
+3. 环境变量粘贴时带了换行，HTTP 节点报 `Invalid non-printable ASCII character in URL`。
+
 ## 六、技术结合证据（怎么核对）
 
 评审要确认"指定技术真的在起作用"，按下面三步看：
@@ -382,6 +463,9 @@ curl -s -X POST http://127.0.0.1:8000/v1/memory/search \
 | 写完记忆下一轮立刻召回不到 | 检索有可见性延迟，等几秒；`verify_roundtrip.py` 里也是同样情况 |
 | `start_powercontext.sh` 一启动就退出，报 `unauthenticated` | 缺 `POWERCONTEXT_SERVER_ALLOW_UNAUTHENTICATED_NON_LOOPBACK=true`，脚本里本该有，检查是不是被改掉了 |
 | Windows 上 `start_powercontext.sh` 直接退出 | 嵌入式 seekdb 没有 Windows wheel，用 WSL2（见 `docs/run-and-capture.md` 第 0 步） |
+| 云版报 `temperature 无效` | 换的模型不支持该参数，点模型右侧滑杆把 temperature 清空，或换回支持的模型 |
+| HTTP 节点报 `Invalid non-printable ASCII character in URL` | 环境变量值末尾多了换行（粘贴带进去的）。编辑时全选重输，末尾别留回车 |
+| 同一会话会翻旧账，跨会话就不记得 | 检索前缀写短了。全文检索把「口供记录」当一个整体词，只写「口供」匹配不上。见 §5.5 |
 | 中文全文检索召回偏低 | PowerContext 最小配置走全文检索，不配 Embedding 时靠关键词匹配。所以记忆正文统一加了 `口供记录：` 前缀，`query` 也加了 `口供 ` 前缀来提升命中率。要更好的召回可以给 PowerContext 配 Embedding（见其 `configure-vector-search` 文档），本作不依赖 |
 
 **降级行为说明**：三个 HTTP 节点都是 `error_strategy: default-value`。PowerContext 挂掉时，建档案室返回 `{}`、调档返回空、归档被忽略，对话本身不会报错——这是刻意设计的，保证"评审至少能玩到对话"，但**记忆功能需要服务在线**。

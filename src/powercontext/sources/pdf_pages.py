@@ -382,6 +382,8 @@ def _statement_bonus(compact: str, surface: set[str]) -> float:
         bonus += _STATEMENT_BONUS
     if _wants_cash(surface) and ("statementofcashflow" in compact or "cashflowsfromoperating" in compact):
         bonus += _CASH_BONUS
+    if _wants_cash(surface) and _full_cash_flow_statement(compact):
+        bonus += 2
     return bonus
 
 
@@ -393,6 +395,7 @@ def _topic_bonus(compact: str, surface: set[str], counts: Counter[str]) -> float
         bonus += 8 if "legalproceeding" in compact else 3 if "litigation" in compact else 0
     if _wants_segment(surface) and "businesssegment" in compact:
         bonus += 7
+    bonus += _narrative_bonus(compact, surface)
     if "cyclicality" in surface and "cyclical" in compact:
         bonus += 6
     if surface & {"customer", "customers"}:
@@ -406,7 +409,18 @@ def _topic_bonus(compact: str, surface: set[str], counts: Counter[str]) -> float
     return bonus
 
 
+def _narrative_bonus(compact: str, surface: set[str]) -> float:
+    bonus = 0.0
+    if _wants_segment(surface) and "bybusinesssegment" in compact:
+        bonus += 8
+    if "drove" in surface and "resultsofoperations" in compact:
+        bonus += 3
+    return bonus
+
+
 def _wants_balance(surface: set[str]) -> bool:
+    if _capital_intensive(surface):
+        return True
     if surface & {"quick", "liquidity", "liability", "liabilities", "roa", "ppne", "ppe", "payable", "dpo"}:
         return True
     if {"balance", "sheet"} <= surface or {"financial", "position"} <= surface:
@@ -415,6 +429,8 @@ def _wants_balance(surface: set[str]) -> bool:
 
 
 def _wants_income(surface: set[str]) -> bool:
+    if _capital_intensive(surface):
+        return True
     if surface & {"margin", "ebitda", "restructuring", "gross", "payable", "cogs"}:
         return True
     if {"tax", "rate"} <= surface or {"income", "statement"} <= surface or {"net", "income"} <= surface:
@@ -427,6 +443,8 @@ def _wants_income(surface: set[str]) -> bool:
 
 
 def _wants_cash(surface: set[str]) -> bool:
+    if _capital_intensive(surface):
+        return True
     if surface & {"capex", "ebitda", "cashflow"}:
         return True
     if "cash" in surface and surface & {"flow", "flows"}:
@@ -434,6 +452,17 @@ def _wants_cash(surface: set[str]) -> bool:
     if {"investing", "financing"} <= surface:
         return True
     return "capital" in surface and "expenditure" in surface
+
+
+def _full_cash_flow_statement(compact: str) -> bool:
+    return all(
+        phrase in compact
+        for phrase in ("cashflowsfromoperating", "cashflowsfrominvesting", "cashflowsfromfinancing")
+    )
+
+
+def _capital_intensive(surface: set[str]) -> bool:
+    return "capital" in surface and "intensive" in surface
 
 
 def _wants_segment(surface: set[str]) -> bool:

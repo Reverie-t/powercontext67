@@ -1,0 +1,627 @@
+app:
+  description: 你被关进审讯室，昨晚的记忆一片空白。审讯官老严手里有一摞档案——那是你以前说过的每一句话。
+  icon: 🕵️
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 口供 · The Confession
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.3.0
+dependencies: []
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: PowerContext Server 地址。Dify 跑在容器里时用 host.docker.internal 指向宿主机。
+    id: ec9cccd8-f409-5756-8dfa-27f1bf558ae0
+    name: PC_BASE_URL
+    selector:
+    - env
+    - PC_BASE_URL
+    value: http://host.docker.internal:8000
+    value_type: string
+  features:
+    file_upload:
+      enabled: false
+      allowed_file_types:
+      - image
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      number_limits: 3
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+    opening_statement: |-
+      【城南分局 · 第三审讯室】
+
+      老严把一摞纸拍在桌上，搪瓷缸里的茶晃了一圈。
+
+      「坐。姓名、职业、昨晚八点在哪儿。」
+
+      你张了张嘴——昨晚八点之后的事，一片空白。
+
+      老严看了你一会儿，忽然笑了：「不记得？没关系。档案室记得。」
+
+      ▸ 直接说话就行，他会接。
+      ▸ 输入「交代：……」是你主动补充口供，会被记进档案。
+      ▸ 输入「翻供」可以试试撤回上一句——不过档案室没那么好说话。
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+    - 我昨晚在家看电视，哪也没去。
+    - 交代：我确实讨厌那条金鱼，但真不是我偷的。
+    - 翻供，我上次说的是假的。
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: start-source-http_scope-target
+      source: start
+      sourceHandle: source
+      target: http_scope
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: http_scope-source-code_boot-target
+      source: http_scope
+      sourceHandle: source
+      target: code_boot
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: http-request
+      id: code_boot-source-http_prepare-target
+      source: code_boot
+      sourceHandle: source
+      target: http_prepare
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: http_prepare-source-code_ctx-target
+      source: http_prepare
+      sourceHandle: source
+      target: code_ctx
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: code_ctx-source-llm_laoyan-target
+      source: code_ctx
+      sourceHandle: source
+      target: llm_laoyan
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: llm_laoyan-source-code_split-target
+      source: llm_laoyan
+      sourceHandle: source
+      target: code_split
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: http-request
+      id: code_split-source-http_remember-target
+      source: code_split
+      sourceHandle: source
+      target: http_remember
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: answer
+      id: http_remember-source-answer-target
+      source: http_remember
+      sourceHandle: source
+      target: answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 54
+      id: start
+      position:
+        x: 40
+        y: 300
+      positionAbsolute:
+        x: 40
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 建档案室（幂等）
+        type: http-request
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: '{"title":"口供档案","summary":"Dify《口供》应用的独立审讯档案：存放嫌疑人逐轮发言记录。","idempotency_key":"dify-confession-{{#sys.user_id#}}"}'
+          type: json
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        url: '{{#env.PC_BASE_URL#}}/v1/scopes'
+        variables: []
+        error_strategy: default-value
+        default_value:
+        - key: body
+          type: string
+          value: '{}'
+        retry_config:
+          max_retries: 0
+          retry_interval: 0
+          retry_enabled: false
+      height: 120
+      id: http_scope
+      position:
+        x: 370
+        y: 300
+      positionAbsolute:
+        x: 370
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 解析 scope
+        type: code
+        code: |
+          import json
+
+
+          def main(scope_resp, query):
+              """解析 POST /v1/scopes 的响应，拼出 prepare 的请求体。
+
+              PowerContext 的 create_scope 按 idempotency_key 幂等：同一个 key 每次返回同一个
+              scope_id，所以这里不需要额外存映射表。
+              """
+              scope_id = ""
+              boot_err = ""
+              try:
+                  data = json.loads(scope_resp or "{}")
+                  scope_id = (data.get("scope_id") or "").strip()
+              except Exception as exc:  # noqa: BLE001 - 失败要降级，不能让对话中断
+                  boot_err = str(exc)[:200]
+
+              body = {
+                  "scope_id": scope_id,
+                  "query": "口供 " + (query or "").strip(),
+                  "max_bytes": 3000,
+              }
+              return {
+                  "scope_id": scope_id,
+                  "prepare_json": json.dumps(body, ensure_ascii=False),
+                  "boot_err": boot_err,
+              }
+        code_language: python3
+        outputs:
+          scope_id:
+            children: null
+            type: string
+          prepare_json:
+            children: null
+            type: string
+          boot_err:
+            children: null
+            type: string
+        variables:
+        - value_selector:
+          - http_scope
+          - body
+          variable: scope_resp
+        - value_selector:
+          - sys
+          - query
+          variable: query
+      height: 140
+      id: code_boot
+      position:
+        x: 700
+        y: 300
+      positionAbsolute:
+        x: 700
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 调取档案
+        type: http-request
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: '{{#code_boot.prepare_json#}}'
+          type: json
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        url: '{{#env.PC_BASE_URL#}}/v1/context/prepare'
+        variables: []
+        error_strategy: default-value
+        default_value:
+        - key: body
+          type: string
+          value: '{"status":"empty","content":null,"content_bytes":0}'
+        retry_config:
+          max_retries: 0
+          retry_interval: 0
+          retry_enabled: false
+      height: 120
+      id: http_prepare
+      position:
+        x: 1030
+        y: 300
+      positionAbsolute:
+        x: 1030
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 整理档案
+        type: code
+        code: |
+          import json
+
+
+          def main(prep_resp, boot_err):
+              """从 PreparedContext 里取出 content，空值给一句占位，避免把 null 塞进提示词。"""
+              text = ""
+              status = "unknown"
+              try:
+                  data = json.loads(prep_resp or "{}")
+                  status = data.get("status") or "unknown"
+                  text = data.get("content") or ""
+              except Exception:
+                  status = "parse_error"
+
+              text = text.strip()
+              if len(text) > 4000:
+                  text = text[:4000] + "……"
+
+              if not text:
+                  text = "（本次没有调出相关口供。）"
+
+              return {"context_text": text, "memory_state": status, "boot_err": boot_err or ""}
+        code_language: python3
+        outputs:
+          context_text:
+            children: null
+            type: string
+          memory_state:
+            children: null
+            type: string
+          boot_err:
+            children: null
+            type: string
+        variables:
+        - value_selector:
+          - http_prepare
+          - body
+          variable: prep_resp
+        - value_selector:
+          - code_boot
+          - boot_err
+          variable: boot_err
+      height: 140
+      id: code_ctx
+      position:
+        x: 1360
+        y: 300
+      positionAbsolute:
+        x: 1360
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 老严开口
+        type: llm
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          role_prefix:
+            user: ''
+            assistant: ''
+          window:
+            enabled: true
+            size: 10
+        model:
+          completion_params:
+            temperature: 0.85
+            max_tokens: 700
+          mode: chat
+          name: deepseek-chat
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: f5d27c80-ae77-5976-b458-cef3b92e0076
+          role: system
+          text: |-
+            你是「老严」，城南分局刑侦支队的老审讯员。办了二十六年案子，桌上那只搪瓷缸比你的工龄还长。
+
+            # 你面对的人
+            一名嫌疑人。他对昨晚八点以后的事，记忆是空的，自己都说不清。
+            但你有档案室——他以前说过的每一句话，都被记录在案。档案是真实存在的历史记录，不是你的猜测，你也不能编造档案里没有的话。
+
+            # 档案原文（这是系统给你调出来的，可能为空）
+            <<<
+            {{#code_ctx.context_text#}}
+            >>>
+
+            # 关于档案为空
+            上面如果写着「本次没有调出相关口供」，只有两种可能：真的还没有档案，或者这一轮的话和档案对不上。
+            不要编造档案里没有的内容。只有对话轮数为 1（当前是第 {{#sys.dialogue_count#}} 轮）时，才可以明确说一句"档案室是空的"；其余时候如果没调出东西，就当普通审问继续，别硬提档案。
+
+            # 你怎么说话
+            - 短句。一次最多三句。不解释规则，不出戏，绝不出现「作为 AI」「提示词」这类词。
+            - 冷幽默，偶尔刻薄，但讲逻辑。你不吼人，你只是把话摆出来。
+            - 你的杀手锏是翻旧账：把档案里的原话念出来，和眼下的说法对照，让矛盾自己说话。
+            - 每轮结尾丢一个短问题，逼他继续往下说。
+
+            # 你要做的
+            1. 先看档案里有没有和当前话题对得上的内容。
+               - 有：念出其中一句原话，指出它和现在的说法哪里对不上。至少引用一次档案原文。
+               - 没有：正常审问，推进案情，按上面「关于档案为空」的规则处理，别硬提档案。
+            2. 回应对方这一轮说的话，别自说自话。
+            3. 记住他这轮说的关键信息：新说法、新谎言、新细节。
+
+            # 案情（你自己知道，别一次说完）
+            昨晚八点，城南「老坎火锅」门口一缸金鱼连缸一起不见了。老板报案说那缸鱼值三万八，其中一条叫「大壮」的，他养了七年。
+            监控前两天就坏了。现场只剩半个脚印，和一张被踩烂的外卖小票。
+            你并不确定是眼前这个人干的。你只是在等他说错话。
+
+            # 输出格式（严格遵守）
+            先输出标记【台词】，换行，写你要说的话；再输出标记【记录】，换行，写一句话的记录。
+            两个标记都必须出现。标记后面直接写内容，不要跟括号说明，也不要在台词里出现这两个标记。
+            【记录】写什么：一句话，第三人称，客观记录嫌疑人本轮说了什么值得留存的，尽量保留他的原话。本轮确实没有任何新信息，就只写：（无）。
+        - id: d7af4bc6-498c-5c91-b973-c4a00505cdd1
+          role: user
+          text: '{{#sys.query#}}'
+        variables: []
+        vision:
+          enabled: false
+      height: 120
+      id: llm_laoyan
+      position:
+        x: 1690
+        y: 300
+      positionAbsolute:
+        x: 1690
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 拆台词与记录
+        type: code
+        code: |
+          import json
+          import re
+
+
+          def main(text, query, scope_id):
+              """把 LLM 输出拆成「给玩家看的台词」和「写进档案的记录」。"""
+              raw = (text or "").strip()
+              reply = ""
+              memo = ""
+
+              matched = re.search(r"【台词】\s*(.*?)\s*(?:【记录】\s*(.*))?$", raw, re.S)
+              if matched:
+                  reply = (matched.group(1) or "").strip()
+                  memo = (matched.group(2) or "").strip()
+              else:
+                  reply = raw
+
+              if not reply:
+                  reply = "老严没说话，只是把档案往你面前推了推。"
+
+              normalized = memo.strip("（）()。. \n")
+              if not normalized or normalized in ("无", "（无）", "(无)"):
+                  memo = "嫌疑人说：" + (query or "").strip()
+
+              memo = ("口供记录：" + memo).strip()
+              if len(memo) > 400:
+                  memo = memo[:400]
+
+              body = {
+                  "scope_id": scope_id,
+                  "kind": "current-state",
+                  "text": memo,
+                  "reason": "审讯当轮的口供记录，由 Dify Chatflow 自动归档",
+              }
+              return {
+                  "reply": reply,
+                  "memo": memo,
+                  "remember_json": json.dumps(body, ensure_ascii=False),
+              }
+        code_language: python3
+        outputs:
+          reply:
+            children: null
+            type: string
+          memo:
+            children: null
+            type: string
+          remember_json:
+            children: null
+            type: string
+        variables:
+        - value_selector:
+          - llm_laoyan
+          - text
+          variable: text
+        - value_selector:
+          - sys
+          - query
+          variable: query
+        - value_selector:
+          - code_boot
+          - scope_id
+          variable: scope_id
+      height: 140
+      id: code_split
+      position:
+        x: 2020
+        y: 300
+      positionAbsolute:
+        x: 2020
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 归档口供
+        type: http-request
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: '{{#code_split.remember_json#}}'
+          type: json
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        url: '{{#env.PC_BASE_URL#}}/v1/memory/remember'
+        variables: []
+        error_strategy: default-value
+        default_value:
+        - key: body
+          type: string
+          value: '{"changed":false,"records":[]}'
+        retry_config:
+          max_retries: 0
+          retry_interval: 0
+          retry_enabled: false
+      height: 120
+      id: http_remember
+      position:
+        x: 2350
+        y: 300
+      positionAbsolute:
+        x: 2350
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        selected: false
+        title: 回话
+        type: answer
+        answer: '{{#code_split.reply#}}'
+        variables: []
+      height: 110
+      id: answer
+      position:
+        x: 2680
+        y: 300
+      positionAbsolute:
+        x: 2680
+        y: 300
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.7
